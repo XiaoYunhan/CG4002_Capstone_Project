@@ -1,4 +1,4 @@
-import pg
+# import pg
 import psycopg2
 
 def connect():
@@ -25,9 +25,9 @@ def connect():
         print ("Error while connecting to PostgreSQL", error)
     finally:
         #closing database connection.
-        # if(connection):
-        #     cursor.close()
-        #     connection.close()
+        if(connection):
+            cursor.close()
+            connection.close()
             print("PostgreSQL connection is closed")
 
 if __name__ == '__main__':
