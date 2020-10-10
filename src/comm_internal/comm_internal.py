@@ -43,17 +43,29 @@ def re_connect(beetle):
             print("Failed to re-connect to %s" %(beetle.addr))
             time.sleep(5)
             continue
-class note_delegate(btle.DefaultDelegate):
-    def __init__(self, number):
-        btle.DefaultDelegate.__init__(self)
 
-        #self.number = number
-        #self.message_str = ""
+class note_delegate(btle.DefaultDelegate):
+    def __init__(self, index):
+        btle.DefaultDelegate.__init__(self)
+        self.index = index
+        self.sensorData = list()
+        self.message_str = ""
 
     def handle_notification(self, cHandle, data):
+        global handshakeDone
+        receive = data.decode("utf-8")
+        if receive == "ACK":
+            if handshakeDone[self.index] == 0:
+                handshakeDone[self.index] = 1
+                print("Beetle No." + str(self.index) + "received ACK!")
+        elif handshakeDone[self.index] == 1:
+            self.handle_data(receive)
+        else:
+            pass
         #receiving_timestamp = time.time() * 1000
-        print("Notification:" + str(cHandle) + str(data) +"\n")
+        #print("Notification:" + str(cHandle) + str(data) +"\n")
 
+        def handle_data(self, rececive):
 
 def init_handshake(beetle):
 
@@ -73,3 +85,25 @@ def receive_data(beetle):
         except():
             print("The connection with %s is lost..." % (beetle.addr))
             re_connect(beetle)
+
+if __name__ == '__main__':
+    #[connectedBeetleAddr.append(0) for index in range(len(beetleAddr))]
+    #[connectedDelegate.append(0) for index in range(len(beetleAddr))]
+
+    set_connection('F8:30:02:08:E9:59')
+    time.sleep(3)
+
+    #set_connection('2C:AB:33:CC:63:F1')
+    #time.sleep(3)
+
+    #set_connection('2C:AB:33:CC:6C:85')
+    #time.sleep(3)
+
+    #set_connection('2C:AB:33:CC:6C:94')
+    #time.sleep(3)
+
+    with ThreadPoolExecutor(max_workers = len(beetleAddr)) as executor:
+        for index in beetleAddr:
+            executor.submit(receive_data, beetle, index)
+            index += 1
+
