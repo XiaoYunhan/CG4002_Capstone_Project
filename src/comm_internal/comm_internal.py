@@ -10,38 +10,71 @@ import threading
 beetleAddr = ['F8:30:02:08:E9:59', '2C:AB:33:CC:63:F1', '2C:AB:33:CC:6C:85', '2C:AB:33:CC:6C:94']
 connectedBeetle = [0, 0, 0, 0, 0, 0] # 0 if the beetle corresponding  to the index is not connected
 connectedDelegate = [0, 0, 0, 0, 0, 0]
-
+beetleHandshake = [0, 0, 0, 0, 0, 0]
+entryFlag = 1
+dataFlag = 0
+index = 1
 uuid = "0000dfb1-0000-1000-8000-00805f9b34fb"
 
-def set_connection(addr):
+def set_connection(addr, index):
+    global beetleHAndshake
     while True:
-        for index in range(len(beetleAddr)):
-            if beetleAddr[index] == addr:
-                if connectedBeetle[index] != 0:
-                    return
+        #for index in range(len(beetleAddr)):
+            #if beetleAddr[index] == addr:
+        if connectedBeetle[index] != 0:
+            return
+        else:
+            print("Connecting Beetle No." + str(index) + "now...")
+            try:
+                beetle = btle.Peripheral(addr)
+                connectedBeetle[index] = beetle
+                beetleDelegate = note_delegate(addr)
+                connectedDelegate[index] = beetleDelegate
+                beetle.withDelegate(beetleDelegate)
+                beetleService = beetle.getServiceUUID("0000dfb0-0000-1000-8000-00805f9b34fb")
+                serviceChara = beetleService.getCharacteristics()[0]
+                break
+            except:
+                continue
+            print("Connection setup with beetle No." + str(index))
+              
+            while beetleHandshake[index] == 0:
+                init_handshake(serviceChara)
+                if (p.waitFotNotifications(1)):
+                    break
                 else:
-                    print("connecting %s now..." % (addr))
-                    beetle = btle.Peripheral(addr)
-                    connectedBeetle[index] = beetle
-                    beetleDelegate = note_delegate(addr)
-                    connectedDelegate[index] = beetleDelegate
-                    beetle.withDelegate(beetleDelegate)
+                    continue
+            while (sum(beetleHandshake) != len(beetleHAndshake)):
+                time.sleep(3)
+              
+            while True:
+               try:
+                   if(p.waitForNotifications(1)):
+                       startTime = 0.0
+                   else:
+                       currTime = time.time()
+                       if currTime - startTime >= 5:
+                           beetle.disconnect()
+                           re_connect(beetle, index)
+                       else:
+                           pass
+                   continue
+               except:
+                   print("Beetle No." + str(index) + "disconnected")
+                   beetle.disconnect()
+                   break
+               re_connect(beetle, index)
 
-                    init_handshake(beetle)
-                    print("Connection setup with %s!!" % (addr))
-                    return
-
-def re_connect(beetle):
+def re_connect(beetle, index):
     while True:
         try:
             print("re-connecting to%s now..." % (beetle.addr))
-            beetle.connect(beetle.addr)
+            set_connection(addr, index)
             print("Re-connection setup with %s" % (beetle.addr))
-            receive_data(beetle)
-            return
+            break
         except():
             print("Failed to re-connect to %s" %(beetle.addr))
-            time.sleep(5)
+            #time.sleep(5)
             continue
 
 class note_delegate(btle.DefaultDelegate):
@@ -49,7 +82,7 @@ class note_delegate(btle.DefaultDelegate):
         btle.DefaultDelegate.__init__(self)
         self.index = index
         self.sensorData = list()
-        self.message_str = ""
+        self.message = ""
 
     def handle_notification(self, cHandle, data):
         global handshakeDone
@@ -66,6 +99,52 @@ class note_delegate(btle.DefaultDelegate):
         #print("Notification:" + str(cHandle) + str(data) +"\n")
 
         def handle_data(self, rececive):
+            global entryFlag
+            global dataFlag
+            global index
+            global start
+            #global data_circular_array
+            #global insert_pointer
+            #global data_insert_counter
+        
+            if(entryFlag):
+                print("Receving data from beetle No." + str(self.index))
+                entryFlag = 0
+            dataLen = len(receive)
+            receive.replace(" ", "|")
+            self.message += data
+            
+            if(data[dataLen - 1] == "z"):
+                entryFlag = 1
+                dataFlag = 0
+                messageLen = len(self.message)
+                if(self.checksumCheck(self.message, messageLen)):
+                    self.message = self.message[:messageLen - 2] + "\0"
+                    print(self.message)
+                    
+                    #temp_arr = self.message.split(" ")
+                    #detail = {
+                        #"dancerId": self.index + 1,
+                        #"rotX": float(temp_arr[0]) / 100,
+                        #"rotY": float(temp_arr[1]) / 100,
+                        #"rotZ": float(temp_arr[2]) / 100,
+                        #"gforceX":float(temp_arr[3]) / 100,
+                        #"gforceY":float(temp_arr[4]) / 100,
+                        #"gforceZ":float(temp_arr[5]) / 100
+                    #}
+                    
+        def checksumCheck(self, msgString, msgLen):
+            index = 0
+            checkSum = 0
+            while index < msgLen - 2:
+                checkSum ^= ord(msgString[index])
+                index += 1
+            checksum = (checksum % 95) + 33
+            if(checksum == ord(msgString[msgLen - 2])):
+                return True
+            else:
+                print("Error message detected...")
+                return False
 
 def init_handshake(beetle):
 
@@ -77,33 +156,24 @@ def init_handshake(beetle):
              print("Sending 'H' to %s" % (beetle.addr))
              characteristic.write(bytes("H".encode("utf-8")))
 
-def receive_data(beetle):
-    while True:
-        try:
-            if beetle.waitForNotification(20):
-                print("receiving data from %s" % (beetle.addr))
-        except():
-            print("The connection with %s is lost..." % (beetle.addr))
-            re_connect(beetle)
-
 if __name__ == '__main__':
     #[connectedBeetleAddr.append(0) for index in range(len(beetleAddr))]
     #[connectedDelegate.append(0) for index in range(len(beetleAddr))]
 
-    set_connection('F8:30:02:08:E9:59')
-    time.sleep(3)
+    #set_connection('F8:30:02:08:E9:59', 1)
+    #time.sleep(5)
 
     #set_connection('2C:AB:33:CC:63:F1')
-    #time.sleep(3)
+    #time.sleep(5)
 
     #set_connection('2C:AB:33:CC:6C:85')
-    #time.sleep(3)
+    #time.sleep(5)
 
     #set_connection('2C:AB:33:CC:6C:94')
-    #time.sleep(3)
+    #time.sleep(5)
 
     with ThreadPoolExecutor(max_workers = len(beetleAddr)) as executor:
-        for index in beetleAddr:
-            executor.submit(receive_data, beetle, index)
+        for beetle in beetleAddr:
+            executor.submit(set_connection, beetle, index)
             index += 1
 
