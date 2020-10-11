@@ -103,48 +103,26 @@ class note_delegate(btle.DefaultDelegate):
             global dataFlag
             global index
             global start
-            #global data_circular_array
-            #global insert_pointer
-            #global data_insert_counter
         
             if(entryFlag):
                 print("Receving data from beetle No." + str(self.index))
                 entryFlag = 0
-            dataLen = len(receive)
             receive.replace(" ", "|")
-            self.message += data
-            
-            if(data[dataLen - 1] == "z"):
-                entryFlag = 1
-                dataFlag = 0
-                messageLen = len(self.message)
-                if(self.checksumCheck(self.message, messageLen)):
-                    self.message = self.message[:messageLen - 2] + "\0"
-                    print(self.message)
-                    
-                    #temp_arr = self.message.split(" ")
-                    #detail = {
-                        #"dancerId": self.index + 1,
-                        #"rotX": float(temp_arr[0]) / 100,
-                        #"rotY": float(temp_arr[1]) / 100,
-                        #"rotZ": float(temp_arr[2]) / 100,
-                        #"gforceX":float(temp_arr[3]) / 100,
-                        #"gforceY":float(temp_arr[4]) / 100,
-                        #"gforceZ":float(temp_arr[5]) / 100
-                    #}
-                    
-        def checksumCheck(self, msgString, msgLen):
-            index = 0
-            checkSum = 0
-            while index < msgLen - 2:
-                checkSum ^= ord(msgString[index])
-                index += 1
-            checksum = (checksum % 95) + 33
-            if(checksum == ord(msgString[msgLen - 2])):
-                return True
-            else:
-                print("Error message detected...")
-                return False
+            self.message += receive 
+            print(self.message)
+
+        #def checksumCheck(self, msgString, msgLen):
+            #index = 0
+            #checkSum = 0
+            #while index < msgLen - 2:
+                #checkSum ^= ord(msgString[index])
+                #index += 1
+            #checksum = 
+            #if(checksum == ord(msgString[msgLen - 2])):
+                #return True
+            #else:
+                #print("Error message detected...")
+                #return False
 
 def init_handshake(beetle):
 
