@@ -119,7 +119,7 @@ class Server(threading.Thread):
 
         # print("Enter the secret key: ")
         # secret_key = sys.stdin.readline().strip()
-        secret_key = "group7xiaoyunhan"
+        secret_key = "passwordpassword"
 
         print('connection from', client_address, file=sys.stderr)
         if len(secret_key) == 16 or len(secret_key) == 24 or len(secret_key) == 32:
