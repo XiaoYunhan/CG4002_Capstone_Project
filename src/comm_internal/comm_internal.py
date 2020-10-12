@@ -79,7 +79,7 @@ class note_delegate(btle.DefaultDelegate):
         btle.DefaultDelegate.__init__(self)
         self.index = index
         #self.sensorData = list()
-        #self.message = ""
+        self.message = ""
 
     def handleNotification(self, cHandle, data):
         print(data)
