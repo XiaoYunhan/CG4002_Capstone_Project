@@ -12,6 +12,7 @@ index = 1
 
 def main():
 
+    """ declaration & initialization """
     # count = 0
     # raw_data = "raw_data"
 
@@ -24,6 +25,7 @@ def main():
 
     # time.sleep(15)
 
+    """ infinite loop to run services on laptop side """
     # while True:
     #     t1 = time.time()
     #     socket_client.execute(raw_data + "|" + str(1000*socket_client.RTT) + "|" + str(1000*socket_client.offset))
@@ -42,3 +44,4 @@ def main():
 
 
 if __name__ == '__main__':
+    main()
