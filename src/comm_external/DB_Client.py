@@ -3,7 +3,8 @@ import psycopg2
 
 def connect():
     """ Connect to the PostgreSQL database server """
-    RDS_HOSTNAME = "b07-dancedashboard.cx4zc3f2utdt.ap-southeast-1.rds.amazonaws.com"
+    RDS_HOSTNAME = "localhost"
+    # RDS_HOSTNAME = "b07-dancedashboard.cx4zc3f2utdt.ap-southeast-1.rds.amazonaws.com"
     RDS_USERNAME = "b07admin"
     RDS_PASSWORD = "password"
     RDS_DATABASE = "justdance"
