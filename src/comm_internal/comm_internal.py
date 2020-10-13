@@ -9,8 +9,6 @@ import threading
 uuid = "0000dfb0-0000-1000-8000-00805f9b34fb"
 beetleAddr = ['F8:30:02:08:E9:59'] #, '2C:AB:33:CC:63:F1', '2C:AB:33:CC:6C:85', '2C:AB:33:CC:6C:94']
 handshakeDone = [0, 0, 0, 0, 0, 0]
-#entryFlag = 1
-#dataFlag = 0
 index = 1
 
 def set_connection(addr, index):
@@ -22,20 +20,20 @@ def set_connection(addr, index):
         beetle.withDelegate(note_delegate(index))
         beetleService = beetle.getServiceByUUID(uuid)
         serviceChar = beetleService.getCharacteristics()[0]
-        print("Connection setup with beetle #" + str(index))
+        print("Connection setup with beetle #" + str(index) + " !")
     except:
         print("Failed to connect to beetle #" + str(index) + ".")
         re_connect(addr, index)
 
-    init_handshake(serviceChar)
+    #init_handshake(serviceChar)
     
-    #while handshakeDone[index] == 0:
-        #init_handshake(serviceChar)
-        #if (beetle.waitForNotifications(1.0)):
+    while handshakeDone[index] == 0:
+        init_handshake(serviceChar)
+        if (beetle.waitForNotifications(1.0)):
             #called handleNotification() here
-            #break
-        #else:
-            #continue
+            break
+        else:
+            continue
 
     #while (sum(handshakeDone) != len(handshakeDone)):
         #time.sleep(3)
@@ -46,7 +44,7 @@ def set_connection(addr, index):
                 startTime = 0.0
             else:
                 currTime = time.time()
-                if currTime - startTime >= 5:
+                if currTime - startTime >= 10:
                     beetle.disconnect()
                     re_connect(beetle, index)
                 else:
@@ -56,12 +54,14 @@ def set_connection(addr, index):
                print("Beetle No." + str(index) + " disconnected")
                beetle.disconnect()
                break
+        #re_connect(beetle, index)
     
-    #re_connect(beetle, index)
-
     while(True):
         if beetle.waitForNotifications(1000):
+            #print(receive)
+            #processData(receive)
             continue
+    #print(receive)
 
 def re_connect(beetle, index):
     while True:
@@ -80,41 +80,44 @@ class note_delegate(btle.DefaultDelegate):
         self.index = index
         #self.sensorData = list()
         self.message = ""
-
     def handleNotification(self, cHandle, data):
-        print(data)
+        global receive
         receive = data.decode("utf-8")
         if receive == "ACK":
             if handshakeDone[self.index] == 0:
                 handshakeDone[self.index] = 1
-            print("Received ACK from beetle #" + str(self.index))
+                print("Beetle #" + str(self.index) + " received ACK!")
+                return
         elif handshakeDone[self.index] == 1:
             print(receive)
-            #self.handle_data(receive)
+            self.processData(receive)
         else:
-            pass
-        
-        def handle_data(self, rececive):
-            global entryFlag
-            global dataFlag
-            global index
-            global start
+            return
 
-            if(entryFlag):
-                print("Receving data from beetle No." + str(self.index))
-                entryFlag = 0
-            receive.replace(" ", "|")
-            self.message += receive
-            #print(self.message)
+    def processData(self, rececive):
+        self.message += receive
+        if 'e' in receive:
+            string = self.message
+            string = string.replace('e', '')
+            string = string.replace(' ', '|')
+            #strLen = length(string)
+            #if(self.calChecksum(string, strLen)):
+               #print(string)
+            
+            print(string)
 
-        #def checksumCheck(self, msgString, msgLen):
-            #checkSum = 0
-            #checksum =
-            #if(checksum == ord(msgString[msgLen - 2])):
-                #return True
-            #else:
-                #print("Error message detected...")
-                #return False
+    def calChecksum(self, string, strLen):
+        index = 0
+        checkSum = 0
+        while index < strLen - 2:
+            checksum += ord(string[index])
+            index += 1
+        print(checksum)
+        if(checksum == ord(string[Len - 2])):
+            return True
+        else:
+            print("Error message detected...")
+            return False
 
 def init_handshake(serviceChar):
     print("Sending H to beetle...")
