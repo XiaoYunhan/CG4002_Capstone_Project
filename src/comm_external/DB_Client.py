@@ -5,7 +5,7 @@ run this command before connection:
 ssh -NfL 3306:b07-dancedashboard.cx4zc3f2utdt.ap-southeast-1.rds.amazonaws.com:5432 -i ~/Downloads/ssh_tunnel.pem ec2-user@ec2-54-169-67-0.ap-southeast-1.compute.amazonaws.com
 """
 
-def connect():
+def connect(date, dance_move, left_time, left_dancer, center_time, center_dancer, right_time, right_dancer, diff_in_timing, sync):
     
     """ Connect to the PostgreSQL database server """
     RDS_HOSTNAME = "localhost"
@@ -28,7 +28,7 @@ def connect():
         record = cursor.fetchone()
         print("You are connected to - ", record,"\n")
 
-        insertDanceDataQuery = "INSERT INTO dancedata VALUES (" + "'" + <date> + "'," + "'<dance move>'" + <left time> + "," + <left dancer> + "," + <center time> + "," + <center dancer> + "," + <right time> + "," + <right dancer> + "," + <diff in timing> + "," + "'" + <sync> + "')"
+        insertDanceDataQuery = "INSERT INTO dancedata VALUES (" + "'" + date + "'," + dance_move + left_time + "," + left_dancer + "," + center_time + "," + center_dancer + "," + right_time + "," + right_dancer + "," + diff_in_timing + "," + "'" + sync + "')"
         # record_to_insert = ()
         cursor.execute(insertDanceDataQuery)
         
