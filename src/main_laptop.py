@@ -39,7 +39,7 @@ def main():
     #     print("offset(ms): " + str(1000*socket_client.offset))
     #     if(count == 10000) :
     #         socket_client.stop()
-    #     time.sleep(2)
+    #     time.sleep(1)
     #     count += 1
 
 
