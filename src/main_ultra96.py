@@ -3,19 +3,19 @@ from comm_external.multiple_server import Server
 
 def main():
 
-    """ decleration and initialization """
+    #""" decleration and initialization """
     socket_server= Server("127.0.0.1", 8080, 7)
     socket_server.start()
     # connect()
-    while True:
-        print(socket_server.raw_data)
-        print(socket_server.RTT)
+    #while True:
+     #   print(socket_server.raw_data)
+      #  print(socket_server.RTT)
 
-        """ raw data processing """
+     #   """ raw data processing """
 
-        """ machine learning """
+      #  """ machine learning """
 
-        """ send data to aws database """
+       # """ send data to aws database """
 
 if __name__ == '__main__':
     main()
