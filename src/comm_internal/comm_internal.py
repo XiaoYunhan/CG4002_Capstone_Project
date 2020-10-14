@@ -10,6 +10,8 @@ uuid = "0000dfb0-0000-1000-8000-00805f9b34fb"
 beetleAddr = ['F8:30:02:08:E9:59'] #, '2C:AB:33:CC:63:F1', '2C:AB:33:CC:6C:85', '2C:AB:33:CC:6C:94']
 handshakeDone = [0, 0, 0, 0, 0, 0]
 index = 1
+global string
+receive = "" 
 
 def set_connection(addr, index):
     #global handshakeDone
@@ -59,7 +61,7 @@ def set_connection(addr, index):
     while(True):
         if beetle.waitForNotifications(1000):
             #print(receive)
-            #processData(receive)
+            return getStr()
             continue
     #print(receive)
 
@@ -81,7 +83,7 @@ class note_delegate(btle.DefaultDelegate):
         #self.sensorData = list()
         self.message = ""
     def handleNotification(self, cHandle, data):
-        global receive
+        #global receive
         receive = data.decode("utf-8")
         if receive == "ACK":
             if handshakeDone[self.index] == 0:
@@ -97,6 +99,7 @@ class note_delegate(btle.DefaultDelegate):
     def processData(self, rececive):
         self.message += receive
         if 'e' in receive:
+            global string
             string = self.message
             string = string.replace('e', '')
             string = string.replace(' ', '|')
@@ -118,6 +121,9 @@ class note_delegate(btle.DefaultDelegate):
         else:
             print("Error message detected...")
             return False
+
+    def getStr():
+        return string
 
 def init_handshake(serviceChar):
     print("Sending H to beetle...")
