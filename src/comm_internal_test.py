@@ -134,8 +134,9 @@ class note_delegate(btle.DefaultDelegate):
         self.index = index
         #self.sensorData = list()
         self.message = ""
+    
     def handleNotification(self, cHandle, data):
-        #global receive
+        global receive
         receive = data.decode("utf-8")
         if receive == "ACK":
             if handshakeDone[self.index] == 0:
@@ -143,8 +144,8 @@ class note_delegate(btle.DefaultDelegate):
                 print("Beetle #" + str(self.index) + " received ACK!")
                 return
         elif handshakeDone[self.index] == 1:
-            print(receive) # mark
-            queue.put(receive)
+            #print(receive) # mark
+            #queue.put(receive)
             self.processData(receive)
         else:
             return
@@ -154,13 +155,14 @@ class note_delegate(btle.DefaultDelegate):
         if 'e' in receive:
             global string
             string = self.message
-            string = string.replace('e', '')
-            string = string.replace(' ', '|')
+            string = string.replace(' e', '')
+            string = string.replace(' ', '/')
             #strLen = length(string)
             #if(self.calChecksum(string, strLen)):
                #print(string)
             
             print(string)
+            queue.put(string)
 
     def calChecksum(self, string, strLen):
         pass
