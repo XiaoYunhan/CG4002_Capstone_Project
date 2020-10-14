@@ -172,7 +172,7 @@ model = model.transform(GiveUniqueNodeNames())
 model.save(build_dir + "/cnv_folded.onnx")
 
 
-# In[ ]:
+# In[6]:
 
 
 # 4. Hardware Generation
@@ -186,10 +186,13 @@ model = model.transform(ZynqBuild(platform = test_pynq_board, period_ns = target
 model.save(build_dir + "/cnv_synth.onnx")
 
 
-# In[ ]:
+# In[7]:
+
 
 # 5. Deployment
+
 import os
+from finn.core.modelwrapper import ModelWrapper
 from finn.transformation.fpgadataflow.make_deployment import DeployToPYNQ
 
 build_dir = "/workspace/finn/fpga"
@@ -205,4 +208,51 @@ model = ModelWrapper(build_dir + "/cnv_synth.onnx")
 model = model.transform(DeployToPYNQ(ip, port, username, password, target_dir))
 model.save(build_dir + "/cnv_deploy.onnx")
 
+
+# In[9]:
+
+
+target_dir_pynq = target_dir + "/" + model.get_metadata_prop("pynq_deployment_dir").split("/")[-1]
+target_dir_pynq
+
+
+# In[17]:
+
+
+# ! sshpass -p {password} ssh {username}@{ip} -p {port} 'ls -l {target_dir_pynq}'
+
+get_ipython().system(" sshpass -p xilinx ssh xilinx@137.132.86.230 'ls -l {target_dir_pynq}' # not working :(")
+
+
+# In[14]:
+
+
+import pkg_resources as pk
+import matplotlib.pyplot as plt
+import numpy as np
+
+fn = pk.resource_filename("finn", "data/cifar10/cifar10-test-data-class3.npz")
+x = np.load(fn)["arr_0"]
+x = x.reshape(3, 32,32).transpose(1, 2, 0)
+plt.imshow(x)
+
+
+# In[16]:
+
+
+import numpy as np
+from finn.core.onnx_exec import execute_onnx
+
+model = ModelWrapper(build_dir + "/cnv_deploy.onnx")
+iname = model.graph.input[0].name
+oname = model.graph.output[0].name
+ishape = model.get_tensor_shape(iname)
+input_dict = {iname: x.astype(np.float32).reshape(ishape)}
+ret = execute_onnx(model, input_dict, True)
+
+
+# In[ ]:
+
+
+ret[oname] # to execute bitfile but it's not working :(
 
