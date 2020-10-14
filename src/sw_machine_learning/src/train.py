@@ -7,6 +7,8 @@ from tqdm import tqdm
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+import copy
+import os
 
 def load_trainval(train_dataset, val_dataset, test_dataset, weighted_sampler, BATCH_SIZE=16):
     train_loader = DataLoader(dataset=train_dataset,
@@ -17,6 +19,21 @@ def load_trainval(train_dataset, val_dataset, test_dataset, weighted_sampler, BA
     test_loader = DataLoader(dataset=test_dataset, batch_size=1)
 
     return train_loader, val_loader, test_loader
+# def seq_loader(X_data, Y_data, window):
+#     out = []
+#     for i in range(0, len(X_data) - window, window):
+#         seq = X_data[i:i+window]
+#         label = Y_data[i]
+#         out.append((seq, label))
+#     return out
+        
+# def load_trainval(X_train, X_val, X_test, Y_train, Y_val, Y_test, BATCH_SIZE=16):
+#     train_loader = seq_loader(X_train, Y_train, 64)
+#     val_loader = seq_loader(X_val, Y_val, 64)
+#     test_loader = seq_loader(X_test, Y_test, 64)
+
+#     return train_loader, val_loader, test_loader
+
 
 ## Train model
 
@@ -43,20 +60,23 @@ loss_stats = {
     "val": []
 }
 
-def train_model(model, train_loader, val_loader, class_weights, EPOCHS=300, LEARNING_RATE=0.0004):
-    criterion = nn.CrossEntropyLoss(weight=class_weights.to("cpu"))
+def train_model(model, train_loader, val_loader, EPOCHS=300, LEARNING_RATE=0.0004):
+    cwd = os.getcwd()
+    PATH = cwd + "/models/ffnn.pt"
+    criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
     print("Begin training.")
     for e in tqdm(range(1, EPOCHS+1)):
+        best_model_wts = copy.deepcopy(model.state_dict())
+        best_acc = 0.0
 
         # TRAINING
-        train_epoch_loss = 0
-        train_epoch_acc = 0
+        train_epoch_loss = 0.0
+        train_epoch_acc = 0.0
         model.train()
         for X_train_batch, Y_train_batch in train_loader:
             X_train_batch, Y_train_batch = X_train_batch.to("cpu"), Y_train_batch.to("cpu")
             optimizer.zero_grad()
-            
             Y_train_pred = model(X_train_batch)
             Y_train_batch = Y_train_batch.view(-1)
             train_loss = criterion(Y_train_pred, Y_train_batch)
@@ -86,6 +106,9 @@ def train_model(model, train_loader, val_loader, class_weights, EPOCHS=300, LEAR
                 
                 val_epoch_loss += val_loss.item()
                 val_epoch_acc += val_acc.item()
+                if val_epoch_acc > best_acc:
+                    best_acc = val_epoch_acc
+                    best_model_wts = copy.deepcopy(model.state_dict())
         loss_stats['train'].append(train_epoch_loss/len(train_loader))
         loss_stats['val'].append(val_epoch_loss/len(val_loader))
         accuracy_stats['train'].append(train_epoch_acc/len(train_loader))
@@ -93,8 +116,9 @@ def train_model(model, train_loader, val_loader, class_weights, EPOCHS=300, LEAR
                                 
         
         print(f'Epoch {e+0:03}: | Train Loss: {train_epoch_loss/len(train_loader):.5f} | Val Loss: {val_epoch_loss/len(val_loader):.5f} | Train Acc: {train_epoch_acc/len(train_loader):.3f}| Val Acc: {val_epoch_acc/len(val_loader):.3f}')
-
-        return model
+    model.load_state_dict(best_model_wts)
+    torch.save(model.state_dict(), PATH)
+    return model
 
 def visual_train():
     ## Visualisation of Training
@@ -107,9 +131,9 @@ def visual_train():
     sns.lineplot(data=train_val_acc_df, x = "epochs", y="value", hue="variable",  ax=axes[0]).set_title('Train-Val Accuracy/Epoch')
     sns.lineplot(data=train_val_loss_df, x = "epochs", y="value", hue="variable", ax=axes[1]).set_title('Train-Val Loss/Epoch')
 
-def train(model, train_dataset, val_dataset, test_dataset, weighted_sampler, class_weights, EPOCHS, BATCH_SIZE, LEARNING_RATE):
+def train(model, train_dataset, val_dataset, test_dataset, weighted_sampler, EPOCHS, BATCH_SIZE, LEARNING_RATE):
     train_loader, val_loader, test_loader = load_trainval(train_dataset, val_dataset, test_dataset, weighted_sampler, BATCH_SIZE)
-    model = train_model(model, train_loader, val_loader, class_weights, EPOCHS, LEARNING_RATE)
+    model = train_model(model, train_loader, val_loader, EPOCHS, LEARNING_RATE)
     visual_train()
     
     return model, test_loader

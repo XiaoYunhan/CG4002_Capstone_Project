@@ -5,7 +5,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix, classification_report
 
-def eval_model(model, test_loader, Y_test, id_class):
+def eval_model(model, test_loader, Y_test):
     Y_pred_list = []
     with torch.no_grad():
         model.eval()
@@ -20,7 +20,7 @@ def eval_model(model, test_loader, Y_test, id_class):
     Y_pred_list = [a.squeeze().tolist() for a in Y_pred_list]
 
     ## Confusion Matrix
-    confusion_matrix_df = pd.DataFrame(confusion_matrix(Y_test, Y_pred_list)).rename(columns=id_class, index=id_class)
+    confusion_matrix_df = pd.DataFrame(confusion_matrix(Y_test, Y_pred_list))
     sns.heatmap(confusion_matrix_df, annot=True)
     #plt.savefig("confusion_3_CNN.png")
 

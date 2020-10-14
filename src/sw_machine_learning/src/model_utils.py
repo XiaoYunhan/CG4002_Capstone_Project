@@ -3,9 +3,11 @@ import torch.nn as nn
 
 from .mobilenet import *
 from .msresnet import *
+from .mlp import *
     
 _models = {
     'msresnet' : msresnet,
+    'ffnn' : ffnn,
     'mobilenetv3_small_w7d20': mobilenetv3_small_w7d20,
     'mobilenetv3_small_wd2': mobilenetv3_small_wd2,
     'mobilenetv3_small_w3d4': mobilenetv3_small_w3d4,

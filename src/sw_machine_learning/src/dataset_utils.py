@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-
+import os
 
 import torch
 from torch.utils.data import Dataset, WeightedRandomSampler
@@ -12,12 +12,20 @@ from sklearn.model_selection import train_test_split
 
 ## Loading Raw Data / Features
 def import_data(header_path, X_path, Y_path):
-    headers = pd.read_csv("HAPT Dataset/features.txt")
+    #headers = pd.read_csv("HAPT Dataset/features.txt")
 
-    X = pd.read_csv("HAPT Dataset/X_full.txt", sep='\s+')
-    Y = pd.read_csv("HAPT Dataset/Y_full.txt", names=["Activity"])
+    #X = pd.read_csv("HAPT Dataset/X_full.txt", sep='\s+')
+    #Y = pd.read_csv("HAPT Dataset/Y_full.txt", names=["Activity"])
+    cols = []
+    for i in range(61):
+        cols.append(i)
 
-    return headers, X, Y
+    data = os.getcwd() + "/../../data/Raw Data/compiled.txt"
+    df = pd.read_csv(data, sep='\s+', names=cols)
+    X = df.loc[:, :59]
+    Y = df.loc[:, 60:]
+    #print(X.head(), Y.head())
+    return X, Y
 
 # Map enumerated classes to start from 0
 def remap_classes(Y):
@@ -160,9 +168,11 @@ def form_dataframes(X_train, Y_train, X_val, Y_val, X_test, Y_test):
     return train_dataset, val_dataset, test_dataset, weighted_sampler, class_weights
 
 def load_dataset(header_path, X_path, Y_path):
-    headers, X, Y = import_data(header_path, X_path, Y_path)
-    Y, id_class = remap_classes(Y)
+    X, Y = import_data(header_path, X_path, Y_path)
+    #Y, id_class = remap_classes(Y)
     X_train, X_val, X_test, Y_train, Y_val, Y_test = split_dataset(X, Y)
     train_dataset, val_dataset, test_dataset, weighted_sampler, class_weights = form_dataframes(X_train, Y_train, X_val, Y_val, X_test, Y_test)
 
-    return train_dataset, val_dataset, test_dataset, weighted_sampler, class_weights, Y_test, id_class, len(X.columns), len(id_class)
+
+    return train_dataset, val_dataset, test_dataset, weighted_sampler, class_weights, Y_test, len(X.columns)
+    #return torch.FloatTensor(X_train), torch.FloatTensor(X_val), torch.FloatTensor(X_test), torch.LongTensor(Y_train), torch.LongTensor(Y_val), torch.LongTensor(Y_test), id_class, len(X.columns), len(id_class)
