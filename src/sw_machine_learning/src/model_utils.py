@@ -4,10 +4,12 @@ import torch.nn as nn
 from .models.msresnet import *
 from .models.mlp import *
 from .mobilenet import *
+from .quantised_models.quant_mlp import *
     
 _models = {
     'msresnet' : msresnet,
     'ffnn' : ffnn,
+    'quant_mlp' : quant_mlp,
     'mobilenetv3_small_w7d20': mobilenetv3_small_w7d20,
     'mobilenetv3_small_wd2': mobilenetv3_small_wd2,
     'mobilenetv3_small_w3d4': mobilenetv3_small_w3d4,

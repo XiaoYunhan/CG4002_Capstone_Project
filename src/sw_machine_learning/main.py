@@ -19,6 +19,6 @@ _paths = {
 if __name__ == "__main__":
 
     train_dataset, val_dataset, test_dataset, weighted_sampler, class_weights, Y_test, NUM_FEATURES = load_dataset(_paths['headers'], _paths['features'], _paths['classes'])
-    model = prepare_model('ffnn')
+    model = prepare_model('quant_mlp')
     model, test_loader = train(model, train_dataset, val_dataset, test_dataset, weighted_sampler, EPOCHS, BATCH_SIZE, LEARNING_RATE)
     eval_model(model, test_loader, Y_test)
