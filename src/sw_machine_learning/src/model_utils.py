@@ -1,9 +1,9 @@
 import torch
 import torch.nn as nn
 
+from .models.msresnet import *
+from .models.mlp import *
 from .mobilenet import *
-from .msresnet import *
-from .mlp import *
     
 _models = {
     'msresnet' : msresnet,

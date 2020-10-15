@@ -7,10 +7,11 @@ from sklearn.metrics import confusion_matrix, classification_report
 
 def eval_model(model, test_loader, Y_test):
     Y_pred_list = []
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     with torch.no_grad():
         model.eval()
         for X_batch, _ in test_loader:
-            X_batch = X_batch.to("cpu")
+            X_batch = X_batch.to(device)
             Y_test_pred = model(X_batch)
             Y_pred_softmax = torch.log_softmax(Y_test_pred, dim = 1)
             _, Y_pred_tags = torch.max(Y_pred_softmax, dim = 1)
