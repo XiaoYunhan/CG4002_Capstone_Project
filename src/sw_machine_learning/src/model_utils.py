@@ -3,7 +3,7 @@ import torch.nn as nn
 
 from .models.msresnet import *
 from .models.mlp import *
-from .mobilenet import *
+from .models.mobilenet import *
 from .quantised_models.quant_mlp import *
     
 _models = {
