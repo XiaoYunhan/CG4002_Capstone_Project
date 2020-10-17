@@ -62,9 +62,11 @@ loss_stats = {
 }
 
 def train_model(model, train_loader, val_loader, EPOCHS=300, LEARNING_RATE=0.0004):
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    model.to(device)
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    
     print("Begin training.")
     for e in tqdm(range(1, EPOCHS+1)):
         best_model_wts = copy.deepcopy(model.state_dict())
