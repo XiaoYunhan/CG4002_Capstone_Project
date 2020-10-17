@@ -5,7 +5,7 @@ from src.test import eval_model
 
 EPOCHS = 300
 LEARNING_RATE = 0.0004
-BATCH_SIZE = 16
+BATCH_SIZE = 128
 NUM_CLASSES = 3
 
 

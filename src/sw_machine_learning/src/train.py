@@ -120,7 +120,7 @@ def train_model(model, train_loader, val_loader, EPOCHS=300, LEARNING_RATE=0.000
         print(f'Epoch {e+0:03}: | Train Loss: {train_epoch_loss/len(train_loader):.5f} | Val Loss: {val_epoch_loss/len(val_loader):.5f} | Train Acc: {train_epoch_acc/len(train_loader):.3f}| Val Acc: {val_epoch_acc/len(val_loader):.3f}')
     cwd = os.getcwd()
     x = datetime.datetime.now()
-    PATH = cwd + "/models/ffnn" + x.strftime("_%d%m_%H%M") +".pt"
+    PATH = cwd + "/quantised_models/ffnn" + x.strftime("_%d%m_%H%M") +".pt"
     model.load_state_dict(best_model_wts)
     torch.save(model.state_dict(), PATH)
     return model
