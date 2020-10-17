@@ -5,7 +5,7 @@ from src.model_utils import prepare_model
 from src.train import train
 from src.test import eval_model
 
-EPOCHS = 1
+EPOCHS = 100
 LEARNING_RATE = 0.0007
 BATCH_SIZE = 128
 NUM_CLASSES = 3
