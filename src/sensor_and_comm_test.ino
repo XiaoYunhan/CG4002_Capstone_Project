@@ -1,17 +1,12 @@
 #include <Wire.h> //for I2C communication
 #include <string.h>
 
-//for comm
-int count = 0;
-char receiveByte;
+//for comm use
+char receiveByte = "";
 int handshakeDone = 0;
 float rawData[6];
 char rawDataStr[6] = "";
-char sentStr[20] = "";
-char endByte = 'e';
-
-//counter for serial printing
-//int count = 0;
+char dataPacket[20] = "";
 
 //store raw data of accel and gyro
 long accelX, accelY, accelZ;  
@@ -24,8 +19,8 @@ float rotX, rotY, rotZ;
 //detect start/end move
 boolean isStartDetected = false;
 boolean toPrint = false;
-float minGForceX=0.8000, minGForceY=-0.0600, minGForceZ=0.3000;
-float maxGForceX=1.1000, maxGForceY=0.2000, maxGForceZ=0.6000;
+float minGForceX=0.8000, minGForceY=0.2000, minGForceZ=0;
+float maxGForceX=1.1000, maxGForceY=0.4000, maxGForceZ=0.3000;
 //float minGForceX=0.8000, minGForceY=0.1000, minGForceZ=0.1000;
 //float maxGForceX=1.1000, maxGForceY=0.3000, maxGForceZ=0.2000;
 int startCount=0;
@@ -41,25 +36,12 @@ void setup() {
 }
 
 void loop() {
-
-  while (!handshakeDone) {
-    if (Serial.available()) {
-      receiveByte = Serial.read();
-      receiveByte = (char)receiveByte;
-      if (receiveByte == 'H') {
-        //Serial.println("Received 'H' from laptop.");
-        Serial.write("ACK"); // Send 'ACK' to Laptop
-        delay(500);
-        handshakeDone = 1;
-        break;
-      }
-    }
-  }
-  
+  initHandshake();  
   recordAccelRegisters(); //pre-processing
   recordGyroRegisters();
-  printData();
+  //printData();
   //startMove();
+  processData();
   delay(100);
 }
 
@@ -102,6 +84,11 @@ void processAccelData() {
   gForceX = accelX / 16384.0;
   gForceY = accelY / 16384.0;
   gForceZ = accelZ / 16384.0;
+    
+  //for comm use
+  rawData[3] = (gForceX);
+  rawData[4] = gForceY;
+  rawData[5] = gForceZ; 
 }
 
 void recordGyroRegisters() {
@@ -122,6 +109,11 @@ void processGyroData() {
   rotX = gyroX / 131.0;
   rotY = gyroY / 131.0;
   rotZ = gyroZ / 131.0;
+
+  //for comm use
+  rawData[0] = rotX;
+  rawData[1] = rotY;
+  rawData[2] = rotZ;
 }
 
 void startMove() {
@@ -151,11 +143,12 @@ void startMove() {
   }
 
   if (toPrint == false) {
-    Serial.println("-1 -1 -1 -1 -1 -1");
+    Serial.println("-1/-1/-1/-1/-1/-1/e");
   } 
 
   if (toPrint == true) {
-    printData();
+    processData();
+    //printData();
   } 
 }
 
@@ -176,19 +169,47 @@ void printData() {
   Serial.print(" ");
   Serial.print(gForceZ, 4);
   Serial.print(" ");
-  // For comm
-  //checksumByte[0] = getChecksum(temp);
-  //strcat(sentStr,checksumByte);
-  Serial.println(endByte);
-  //strcat(sentStr,endByte);
-  //Serial.println(sentStr);
 }
 
-/*char getChecksum(temp) {
-  int len = strlen(temp);
-  char checksum = 0;
-  for(int i = 0; i < len; i++) {
-    checksum += temp[i];
+void initHandshake() {
+  while (!handshakeDone) {
+    if (Serial.available()) {
+      receiveByte = Serial.read();
+      receiveByte = (char)receiveByte;
+      if (receiveByte == 'H') {
+        //Serial.println("Received 'H' from laptop.");
+        Serial.write("ACK"); // Send 'ACK' to Laptop
+        delay(500);
+        handshakeDone = 1;
+        break;
+      }
+    }
   }
+}
+
+void processData() {
+  memset(dataPacket, 0, sizeof(dataPacket));
+  memset(rawDataStr, 0, sizeof(rawDataStr));
+  for(int i = 0; i < 6; i++) {
+    char tempChar[5];
+    dtostrf(rawData[i], 8, 4, tempChar);
+    strcat(dataPacket, tempChar);
+    //sensorInt = sensorValues[i]*100;
+    //itoa(rawData[i], rawDataStr, 10);
+    strcat(dataPacket, rawDataStr);
+    strcat(dataPacket,"/");
+  }
+  
+  char checksumByte[2] = "";
+  //checksumByte[0] = getChecksum(dataPacket);
+  strcat(dataPacket,checksumByte);
+  strcat(dataPacket, "e");
+  
+  Serial.println(dataPacket);
+}
+
+char getChecksum(char dataPacket) {
+  int len = strlen(dataPacket);
+  char checksum = 0;
   return checksum;
-}*/
+}
