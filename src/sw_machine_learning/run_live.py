@@ -31,7 +31,8 @@ def init_server():
 
 def load_model(PATH):
     model = ffnn()
-    model.load_state_dict(torch.load(PATH + "mlp_1510_0451.pt"))
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    model.load_state_dict(torch.load(PATH + "mlp_1510_0451.pt", map_location=device))
     return model
 
 
