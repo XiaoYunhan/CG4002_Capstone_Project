@@ -12,18 +12,14 @@ int counter = 0;
 //store raw data of accel and gyro
 long accelXW, accelYW, accelZW;  
 long gyroXW, gyroYW, gyroZW;
-
 long accelXA, accelYA, accelZA;  
 long gyroXA, gyroYA, gyroZA;
 
 //calculate accel and gyro in degree and g
 float gForceXW, gForceYW, gForceZW;
 float rotXW, rotYW, rotZW;
-
 float gForceXA, gForceYA, gForceZA;
 float rotXA, rotYA, rotZA;
-
-unsigned long currentMillis, previousMillis;
 
 void setup() {
   Serial.begin(9600);
@@ -172,7 +168,6 @@ void updateGyro() {
     sumZ += rotZWArray[i];
   }
   meanX = sumX / 10.0;
-//  Serial.print(meanX); Serial.print(" ");
   meanY = sumY / 10.0;
   meanZ = sumZ / 10.0;
 
@@ -182,14 +177,11 @@ void updateGyro() {
   rotZWArray[10] = rotZW;
   
   differenceX = sq(meanX - rotXWArray[10]);
-//  Serial.print(differenceX); Serial.println(" ");
   differenceY = sq(meanY - rotYWArray[10]);
   differenceZ = sq(meanZ - rotZWArray[10]);
 
   totalDifference = differenceX + differenceY + differenceZ;
   sqrtDifference = sqrt(totalDifference);
-
-//  Serial.println(sqrtDifference);
 
   //save value in counter index
   rotXWArray[countIndex] = rotXW;
