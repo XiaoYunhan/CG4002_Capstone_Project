@@ -14,10 +14,11 @@ DATA_LEN = 252
 model_name = 'msresnet'
 
 _paths = {
-    'compiled' : os.getcwd() + "/../../data/Raw Data/compiled.txt",
-    'compiled_cnn' : os.getcwd() + "/../../data/Raw Data/compiled_cnn.txt",
-    'model_save' : os.getcwd() + "/models/" + model_name,
-    'quant_model_save' : os.getcwd() + "/quantised_models/" + model_name
+    'compiled'          : os.getcwd() + "/../../data/Raw Data/compiled.txt",
+    'compiled_cnn'      : os.getcwd() + "/../../data/Raw Data/compiled_cnn.txt",
+    'compiled_hapt'     : os.getcwd() + "/../../data/HAPT Dataset/RawData/compiled_hapt.txt",
+    'model_save'        : os.getcwd() + "/models/" + model_name,
+    'quant_model_save'  : os.getcwd() + "/quantised_models/" + model_name
 }
 
 

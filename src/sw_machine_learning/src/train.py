@@ -8,7 +8,6 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import copy
-import os
 import datetime
 
 def load_trainval(train_dataset, val_dataset, test_dataset, weighted_sampler, BATCH_SIZE=16):
