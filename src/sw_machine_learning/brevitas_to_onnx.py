@@ -27,6 +27,8 @@ for file in quantised:
 
 for onnx_file in to_convert:
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    model = quant_msresnet()
+    input_shape = ()
     if onnx_file.split("_")[0] == "mlp":
         model = quant_mlp()
         input_shape = (1,60)

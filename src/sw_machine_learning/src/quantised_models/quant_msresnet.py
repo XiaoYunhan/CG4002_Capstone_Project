@@ -129,13 +129,13 @@ class QuantMSResNet(nn.Module):
         self.inplanes5 = 64
         self.inplanes7 = 64
 
-        super(MSResNet, self).__init__()
+        super(QuantMSResNet, self).__init__()
 
-        self.conv1 = nn.Conv1d(input_channel, 64, kernel_size=7, stride=2, padding=3,
-                               bias=False)
+        self.conv1 = qnn.QuantConv1d(input_channel, 64, kernel_size=7, stride=2, padding=3,
+                               bias=False, weight_quant_type=QuantType.FP, weight_bit_width=8)
         self.bn1 = nn.BatchNorm1d(64)
         self.relu = qnn.QuantReLU(quant_type=QuantType.FP, bit_width=8, inplace=True)
-        self.maxpool = qnn.QuantMaxPool1d(kernel_size=3, stride=2, padding=1)
+        self.maxpool = nn.MaxPool1d(kernel_size=3, stride=2, padding=1)
 
         self.layer3x3_1 = self._make_layer3(BasicBlock3x3, 64, layers[0], stride=2)
         self.layer3x3_2 = self._make_layer3(BasicBlock3x3, 128, layers[1], stride=2)
@@ -157,7 +157,7 @@ class QuantMSResNet(nn.Module):
         self.maxpool7 = nn.AvgPool1d(kernel_size=7, stride=1, padding=0)
 
         # self.drop = nn.Dropout(p=0.2)
-        self.fc = qnn.QuantLinear(128*3, num_classes, weight_quant_type=QuantType.FP, weight_bit_width=8)
+        self.fc = qnn.QuantLinear(128*3, num_classes, bias=False, weight_quant_type=QuantType.FP, weight_bit_width=8)
 
     def _make_layer3(self, block, planes, blocks, stride=2):
         downsample = None
