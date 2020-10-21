@@ -11,14 +11,14 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split 
 
 ## Loading Raw Data / Features
-def import_data(data_path):
+def import_data(data_path, DATA_LEN):
     cols = []
-    for i in range(61):
+    for i in range(DATA_LEN + 1):
         cols.append(i)
 
     df = pd.read_csv(data_path, sep='\s+', names=cols)
-    X = df.loc[:, :59]
-    Y = df.loc[:, 60:]
+    X = df.loc[:, :DATA_LEN-1]
+    Y = df.loc[:, DATA_LEN:]
     
     return X, Y
 
@@ -162,8 +162,8 @@ def form_dataframes(X_train, Y_train, X_val, Y_val, X_test, Y_test):
 
     return train_dataset, val_dataset, test_dataset, weighted_sampler, class_weights
 
-def load_dataset(data_path):
-    X, Y = import_data(data_path)
+def load_dataset(data_path, DATA_LEN):
+    X, Y = import_data(data_path, DATA_LEN)
     #Y, id_class = remap_classes(Y)
     X_train, X_val, X_test, Y_train, Y_val, Y_test = split_dataset(X, Y)
     train_dataset, val_dataset, test_dataset, weighted_sampler, class_weights = form_dataframes(X_train, Y_train, X_val, Y_val, X_test, Y_test)

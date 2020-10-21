@@ -20,11 +20,7 @@ IDLE_FRAME = "-1/-1/-1/-1/-1/-1"
 IGNORE_FRAME = 10
 
 def init_server():
-    ip_addr = IP_ADDRESS
-    port_num = PORT
-    group_id = GROUP
-
-    my_server = Server(ip_addr, port_num, group_id)
+    my_server = Server(IP_ADDRESS, PORT, GROUP)
     my_server.run()
     return my_server
 

@@ -21,21 +21,6 @@ def load_trainval(train_dataset, val_dataset, test_dataset, weighted_sampler, BA
     test_loader = DataLoader(dataset=test_dataset, batch_size=1)
 
     return train_loader, val_loader, test_loader
-# def seq_loader(X_data, Y_data, window):
-#     out = []
-#     for i in range(0, len(X_data) - window, window):
-#         seq = X_data[i:i+window]
-#         label = Y_data[i]
-#         out.append((seq, label))
-#     return out
-        
-# def load_trainval(X_train, X_val, X_test, Y_train, Y_val, Y_test, BATCH_SIZE=16):
-#     train_loader = seq_loader(X_train, Y_train, 64)
-#     val_loader = seq_loader(X_val, Y_val, 64)
-#     test_loader = seq_loader(X_test, Y_test, 64)
-
-#     return train_loader, val_loader, test_loader
-
 
 ## Train model
 
@@ -62,7 +47,7 @@ loss_stats = {
     "val": []
 }
 
-def train_model(model, train_loader, val_loader, EPOCHS=300, LEARNING_RATE=0.0004):
+def train_model(model, train_loader, val_loader, model_save_path, EPOCHS=300, LEARNING_RATE=0.0004):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model.to(device)
     criterion = nn.CrossEntropyLoss()
@@ -79,6 +64,8 @@ def train_model(model, train_loader, val_loader, EPOCHS=300, LEARNING_RATE=0.000
         model.train()
         for X_train_batch, Y_train_batch in train_loader:
             X_train_batch, Y_train_batch = X_train_batch.to(device), Y_train_batch.to(device)
+            X_train_batch = X_train_batch.unsqueeze(0)
+            X_train_batch = X_train_batch.permute(1, 0, 2)
             optimizer.zero_grad()
             Y_train_pred = model(X_train_batch)
             Y_train_batch = Y_train_batch.view(-1)
@@ -101,9 +88,10 @@ def train_model(model, train_loader, val_loader, EPOCHS=300, LEARNING_RATE=0.000
             model.eval()
             for X_val_batch, Y_val_batch in val_loader:
                 X_val_batch, Y_val_batch = X_val_batch.to(device), Y_val_batch.to(device)
-                
-                Y_val_pred = model(X_val_batch)
+                X_val_batch = X_val_batch.unsqueeze(0)
+                Y_val_pred = model(X_val_batch).unsqueeze(0)
                 Y_val_batch = Y_val_batch.view(-1) 
+                
                 val_loss = criterion(Y_val_pred, Y_val_batch)
                 val_acc = multi_acc(Y_val_pred, Y_val_batch)
                 
@@ -119,11 +107,12 @@ def train_model(model, train_loader, val_loader, EPOCHS=300, LEARNING_RATE=0.000
                                 
         
         print(f'Epoch {e+0:03}: | Train Loss: {train_epoch_loss/len(train_loader):.5f} | Val Loss: {val_epoch_loss/len(val_loader):.5f} | Train Acc: {train_epoch_acc/len(train_loader):.3f}| Val Acc: {val_epoch_acc/len(val_loader):.3f}')
-    cwd = os.getcwd()
+    
     x = datetime.datetime.now()
-    PATH = cwd + "/quantised_models/ffnn" + x.strftime("_%d%m_%H%M") + ".pt"
+    PATH = model_save_path + x.strftime("_%d%m_%H%M") + ".pt"
     model.load_state_dict(best_model_wts)
     torch.save(model.state_dict(), PATH)
+
     return model
 
 def visual_train():
@@ -137,9 +126,9 @@ def visual_train():
     sns.lineplot(data=train_val_acc_df, x = "epochs", y="value", hue="variable",  ax=axes[0]).set_title('Train-Val Accuracy/Epoch')
     sns.lineplot(data=train_val_loss_df, x = "epochs", y="value", hue="variable", ax=axes[1]).set_title('Train-Val Loss/Epoch')
 
-def train(model, train_dataset, val_dataset, test_dataset, weighted_sampler, EPOCHS, BATCH_SIZE, LEARNING_RATE):
-    train_loader, val_loader, test_loader = load_trainval(train_dataset, val_dataset, test_dataset, weighted_sampler, BATCH_SIZE)
-    model = train_model(model, train_loader, val_loader, EPOCHS, LEARNING_RATE)
+def train(model, train_dataset, val_dataset, test_dataset, weighted_sampler, EPOCHS, BATCH_SIZE, LEARNING_RATE, model_save_path):
+    train_loader, val_loader, test_loader = load_trainval(train_dataset, val_dataset, test_dataset, weighted_sampler, BATCH_SIZE=BATCH_SIZE)
+    model = train_model(model, train_loader, val_loader, model_save_path, EPOCHS=EPOCHS, LEARNING_RATE=LEARNING_RATE)
     visual_train()
     
     return model, test_loader
