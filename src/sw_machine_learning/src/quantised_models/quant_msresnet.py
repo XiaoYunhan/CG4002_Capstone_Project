@@ -123,7 +123,7 @@ class BasicBlock7x7(nn.Module):
 
 
 
-class MSResNet(nn.Module):
+class QuantMSResNet(nn.Module):
     def __init__(self, input_channel, layers=[1, 1, 1, 1], num_classes=10):
         self.inplanes3 = 64
         self.inplanes5 = 64
@@ -236,15 +236,15 @@ class MSResNet(nn.Module):
 
         return out
 
-def msresnet(**kwargs):
-    return MSResNet(input_channel=1, layers=[1, 1, 1, 1], num_classes=3)
+def quant_msresnet(**kwargs):
+    return QuantMSResNet(input_channel=1, layers=[1, 1, 1], num_classes=3)
 
 
 def test():
     import numpy
     X = numpy.random.uniform(0, 1, (1,1, 252))
 
-    model = msresnet()
+    model = quant_msresnet()
     print(model(torch.tensor(X).float()))
 
 if __name__ == "__main__":
