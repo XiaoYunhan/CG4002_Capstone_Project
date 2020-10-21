@@ -24,7 +24,7 @@ def eval_model(model, test_loader, Y_test):
     ## Confusion Matrix
     confusion_matrix_df = pd.DataFrame(confusion_matrix(Y_test, Y_pred_list))
     sns.heatmap(confusion_matrix_df, annot=True)
-    #plt.savefig("confusion_3_CNN.png")
+    plt.savefig("msresnet_init.png")
 
     ## Classification Report
     print(classification_report(Y_test, Y_pred_list))

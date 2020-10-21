@@ -20,6 +20,7 @@ def import_data(data_path, DATA_LEN):
     X = df.loc[:, :DATA_LEN-1]
     Y = df.loc[:, DATA_LEN:]
     
+    print("Data Loaded from File")
     return X, Y
 
 # Map enumerated classes to start from 0
