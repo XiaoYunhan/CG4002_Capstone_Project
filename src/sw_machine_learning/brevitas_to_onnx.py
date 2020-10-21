@@ -27,14 +27,14 @@ for file in quantised:
 
 for onnx_file in to_convert:
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    model = quant_msresnet()
-    input_shape = ()
+
     if onnx_file.split("_")[0] == "mlp":
         model = quant_mlp()
         input_shape = (1,60)
+        model.load_state_dict(torch.load(os.getcwd() + "/quantised_models/" + onnx_file + ".pt", map_location=device))
+        bo.export_finn_onnx(model, input_shape, os.getcwd() + "/onnx/" + onnx_file + ".onnx")
     elif onnx_file.split("_")[0] == "msresnet":
         model = quant_msresnet()
         input_shape = (1,1,252)
-    model.load_state_dict(torch.load(os.getcwd() + "/quantised_models/" + onnx_file + ".pt", map_location=device))
-    
-    bo.export_finn_onnx(model, input_shape, os.getcwd() + "/onnx/" + onnx_file + ".onnx")
+        model.load_state_dict(torch.load(os.getcwd() + "/quantised_models/" + onnx_file + ".pt", map_location=device))
+        bo.export_finn_onnx(model, input_shape, os.getcwd() + "/onnx/" + onnx_file + ".onnx")

@@ -79,8 +79,8 @@ class BasicBlock5x5(nn.Module):
             residual = self.downsample(x)
 
         d = residual.shape[2] - out.shape[2]
-        out1 = residual[:,:,0:-d] + out
-        out1 = self.relu(out1)
+        #out1 = residual[:,:,0:-d] + out
+        out1 = self.relu(out)
         # out += residual
 
         return out1
@@ -114,8 +114,8 @@ class BasicBlock7x7(nn.Module):
             residual = self.downsample(x)
 
         d = residual.shape[2] - out.shape[2]
-        out1 = residual[:, :, 0:-d] + out
-        out1 = self.relu(out1)
+        #out1 = residual[:, :, 0:-d] + out
+        out1 = self.relu(out)
         # out += residual
 
         return out1
