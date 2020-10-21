@@ -12,7 +12,8 @@ def eval_model(model, test_loader, Y_test):
         model.eval()
         for X_batch, _ in test_loader:
             X_batch = X_batch.to(device)
-            Y_test_pred = model(X_batch)
+            X_batch = X_batch.unsqueeze(0)
+            Y_test_pred = model(X_batch).unsqueeze(0)
             Y_pred_softmax = torch.log_softmax(Y_test_pred, dim = 1)
             _, Y_pred_tags = torch.max(Y_pred_softmax, dim = 1)
             Y_pred_list.append(Y_pred_tags.cpu().numpy())
@@ -23,7 +24,7 @@ def eval_model(model, test_loader, Y_test):
     ## Confusion Matrix
     confusion_matrix_df = pd.DataFrame(confusion_matrix(Y_test, Y_pred_list))
     sns.heatmap(confusion_matrix_df, annot=True)
-    #plt.savefig("confusion_3_CNN.png")
+    plt.savefig("msresnet_init.png")
 
     ## Classification Report
     print(classification_report(Y_test, Y_pred_list))

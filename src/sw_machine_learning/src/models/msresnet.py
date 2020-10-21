@@ -129,7 +129,7 @@ class MSResNet(nn.Module):
 
         super(MSResNet, self).__init__()
 
-        self.conv1 = nn.Conv1d(input_channel, 64, kernel_size=6, stride=2, padding=3,
+        self.conv1 = nn.Conv1d(input_channel, 64, kernel_size=7, stride=2, padding=3,
                                bias=False)
         self.bn1 = nn.BatchNorm1d(64)
         self.relu = nn.ReLU(inplace=True)
@@ -148,17 +148,17 @@ class MSResNet(nn.Module):
         self.layer5x5_2 = self._make_layer5(BasicBlock5x5, 128, layers[1], stride=2)
         self.layer5x5_3 = self._make_layer5(BasicBlock5x5, 256, layers[2], stride=2)
         # self.layer5x5_4 = self._make_layer5(BasicBlock5x5, 512, layers[3], stride=2)
-        self.maxpool5 = nn.AvgPool1d(kernel_size=11, stride=1, padding=0)
+        self.maxpool5 = nn.AvgPool1d(kernel_size=12, stride=1, padding=0)
 
 
         self.layer7x7_1 = self._make_layer7(BasicBlock7x7, 64, layers[0], stride=2)
         self.layer7x7_2 = self._make_layer7(BasicBlock7x7, 128, layers[1], stride=2)
         self.layer7x7_3 = self._make_layer7(BasicBlock7x7, 256, layers[2], stride=2)
         # self.layer7x7_4 = self._make_layer7(BasicBlock7x7, 512, layers[3], stride=2)
-        self.maxpool7 = nn.AvgPool1d(kernel_size=6, stride=1, padding=0)
+        self.maxpool7 = nn.AvgPool1d(kernel_size=7, stride=1, padding=0)
 
         # self.drop = nn.Dropout(p=0.2)
-        self.fc = nn.Linear(256*3, num_classes)
+        self.fc = nn.Linear(128*3, num_classes)
 
         # todo: modify the initialization
         # for m in self.modules():
@@ -222,39 +222,63 @@ class MSResNet(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x0):
+        #print(x0.shape)
         x0 = self.conv1(x0)
-        print(x0.shape)
+        #print(x0.shape)
         x0 = self.bn1(x0)
-        print(x0.shape)
+        #print(x0.shape)
         x0 = self.relu(x0)
-        print(x0.shape)
+        #print(x0.shape)
         x0 = self.maxpool(x0)
-        print(x0.shape)
+        #print(x0.shape)
         x = self.layer3x3_1(x0)
+        #print("x1",x.shape)
         x = self.layer3x3_2(x)
-        x = self.layer3x3_3(x)
+        #print("x2",x.shape)
+        #x = self.layer3x3_3(x)
+        #print("x3",x.shape)
         # x = self.layer3x3_4(x)
-        #x = self.maxpool3(x)
+        x = self.maxpool3(x)
+        #print("xp",x.shape)
 
         y = self.layer5x5_1(x0)
+        #print("y1",y.shape)
         y = self.layer5x5_2(y)
-        y = self.layer5x5_3(y)
+        #print("y2",y.shape)
+        #y = self.layer5x5_3(y)
+        #print("y3",y.shape)
         # y = self.layer5x5_4(y)
-        #y = self.maxpool5(y)
+        y = self.maxpool5(y)
+        #print("yp",y.shape)
 
         z = self.layer7x7_1(x0)
+        #print("z1",z.shape)
         z = self.layer7x7_2(z)
-        z = self.layer7x7_3(z)
+        #print("z2",z.shape)
+        #z = self.layer7x7_3(z)
+        #print("z3",z.shape)
         # z = self.layer7x7_4(z)
-        #z = self.maxpool7(z)
+        z = self.maxpool7(z)
+        #print("zp",z.shape)
 
         out = torch.cat([x, y, z], dim=1)
 
         out = out.squeeze()
         # out = self.drop(out)
-        out1 = self.fc(out)
+        out = self.fc(out)
 
-        return out1, out
+        return out
 
 def msresnet(**kwargs):
-    return MSResNet(input_channel=1, layers=[1, 1, 1, 1], num_classes=12)
+    return MSResNet(input_channel=1, layers=[1, 1, 1, 1], num_classes=3)
+
+
+def test():
+    import numpy
+    X = numpy.random.uniform(0, 1, (1,1, 252))
+
+    model = msresnet()
+    print(model(torch.tensor(X).float()))
+
+if __name__ == "__main__":
+    test()

@@ -7,17 +7,24 @@ from src.test import eval_model
 
 EPOCHS = 100
 LEARNING_RATE = 0.0007
-BATCH_SIZE = 128
+BATCH_SIZE = 64
 NUM_CLASSES = 3
+DATA_LEN = 252
+
+model_name = 'quant_msresnet'
 
 _paths = {
-    'compiled' : os.getcwd() + "/../../data/Raw Data/compiled.txt"
+    'compiled'          : os.getcwd() + "/../../data/Raw Data/compiled.txt",
+    'compiled_cnn'      : os.getcwd() + "/../../data/Raw Data/compiled_cnn.txt",
+    'compiled_hapt'     : os.getcwd() + "/../../data/HAPT Dataset/RawData/compiled_hapt.txt",
+    'model_save'        : os.getcwd() + "/models/" + model_name,
+    'quant_model_save'  : os.getcwd() + "/quantised_models/" + model_name
 }
 
 
 if __name__ == "__main__":
 
-    train_dataset, val_dataset, test_dataset, weighted_sampler, class_weights, Y_test, NUM_FEATURES = load_dataset(_paths['compiled'])
-    model = prepare_model('quant_mlp')
-    model, test_loader = train(model, train_dataset, val_dataset, test_dataset, weighted_sampler, EPOCHS, BATCH_SIZE, LEARNING_RATE)
+    train_dataset, val_dataset, test_dataset, weighted_sampler, class_weights, Y_test, NUM_FEATURES = load_dataset(_paths['compiled_cnn'], DATA_LEN)
+    model = prepare_model(model_name)
+    model, test_loader = train(model, train_dataset, val_dataset, test_dataset, weighted_sampler, EPOCHS, BATCH_SIZE, LEARNING_RATE, _paths['quant_model_save'])
     eval_model(model, test_loader, Y_test)
