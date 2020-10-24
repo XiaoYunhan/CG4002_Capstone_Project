@@ -22,7 +22,7 @@ float gForceXA, gForceYA, gForceZA;
 float rotXA, rotYA, rotZA;
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   Wire.begin(); //initialise I2C communication
   setupMPUW();
   setupMPUA();
@@ -191,7 +191,7 @@ void updateGyro() {
   counter++;
   if (counter > 5) {
     Serial.print(counter-5); Serial.print(" ");
-    if (sqrtDifference < 5) {
+    if (sqrtDifference < 10) {
       Serial.println("-1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1");
     }
     else {
