@@ -5,11 +5,13 @@ from .models.msresnet import *
 from .models.mlp import *
 from .models.mobilenet import *
 from .quantised_models.quant_mlp import *
+from .quantised_models.quant_msresnet import *
     
 _models = {
     'msresnet' : msresnet,
     'ffnn' : ffnn,
     'quant_mlp' : quant_mlp,
+    'quant_msresnet' : quant_msresnet,
     'mobilenetv3_small_w7d20': mobilenetv3_small_w7d20,
     'mobilenetv3_small_wd2': mobilenetv3_small_wd2,
     'mobilenetv3_small_w3d4': mobilenetv3_small_w3d4,

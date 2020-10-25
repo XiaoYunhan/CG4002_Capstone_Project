@@ -20,18 +20,15 @@ IDLE_FRAME = "-1/-1/-1/-1/-1/-1"
 IGNORE_FRAME = 10
 
 def init_server():
-    ip_addr = IP_ADDRESS
-    port_num = PORT
-    group_id = GROUP
-
-    my_server = Server(ip_addr, port_num, group_id)
+    my_server = Server(IP_ADDRESS, PORT, GROUP)
     my_server.run()
     return my_server
 
 
 def load_model(PATH):
     model = ffnn()
-    model.load_state_dict(torch.load(PATH + "mlp_1510_0451.pt"))
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    model.load_state_dict(torch.load(PATH + "mlp_1510_0451.pt", map_location=device))
     return model
 
 
