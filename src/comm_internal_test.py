@@ -18,7 +18,7 @@ from Crypto.Cipher import AES
 from Crypto import Random
 
 uuid = "0000dfb0-0000-1000-8000-00805f9b34fb"
-beetleAddr = ['F8:30:02:08:E9:59'] #, '2C:AB:33:CC:63:F1', '2C:AB:33:CC:6C:85', '2C:AB:33:CC:6C:94']
+beetleAddr = ['2C:AB:33:CC:63:F1'] #['2C:AB:33:CC:65:D4'] #F8:30:02:08:E9:59', '2C:AB:33:CC:63:F1', '2C:AB:33:CC:6C:85', '2C:AB:33:CC:6C:94']
 handshakeDone = [0, 0, 0, 0, 0, 0]
 global string
 receive = ""
@@ -40,7 +40,7 @@ class Client():
 
     def encrypt_message(self, message):
         plain_text = "#" + message
-        print(plain_text)
+        #print(plain_text)
         padded_plain_text = plain_text + ' ' * (AES.block_size - (len(plain_text) % AES.block_size))
         # print(padded_plain_text)
         iv = Random.new().read(AES.block_size)
@@ -56,7 +56,7 @@ class Client():
 
     def execute(self, message):
         message_encrypted = self.encrypt_message(message)
-        print(message_encrypted)
+        #print(message_encrypted)
         self.socket.sendall(message_encrypted)
 
     def stop(self):
@@ -76,7 +76,7 @@ def set_connection(addr, index):
         serviceChar = beetleService.getCharacteristics()[0]
         print("Connection setup with beetle #" + str(index) + " !")
     except:
-        print("Failed to connect to beetle #" + str(index) + ".")
+        #print("Failed to connect to beetle #" + str(index) + ".")
         re_connect(addr, index)
 
     #init_handshake(serviceChar)
@@ -107,8 +107,8 @@ def set_connection(addr, index):
         except:
                print("Beetle No." + str(index) + " disconnected")
                beetle.disconnect()
+               re_connect(beetle, index)
                break
-        #re_connect(beetle, index)
     
     while(True):
         if beetle.waitForNotifications(1000):
@@ -151,17 +151,22 @@ class note_delegate(btle.DefaultDelegate):
             return
 
     def processData(self, rececive):
+        #print(receive)
         self.message += receive
         if 'e' in receive:
             global string
             string = self.message
-            string = string.replace(' e', '')
-            string = string.replace(' ', '/')
+            string = string.replace(' ', '')
+            string = string.replace('/e', '')
+            string = string.replace('\n', '')
+            self.message = ""
             #strLen = length(string)
             #if(self.calChecksum(string, strLen)):
                #print(string)
             
-            print(string)
+            print(string) 
+            #print(ascii(string))
+           # print("************************")
             queue.put(string)
 
     def calChecksum(self, string, strLen):
@@ -227,8 +232,6 @@ if __name__ == '__main__':
            # a = queue.get()
             #print("received: " + a)
 
-
-
     thread1 = Thread(target = thread_internal, args = ("Thread-1", queue))
     thread2 = Thread(target = thread_external, args = ("Thread-2", queue))
 
@@ -237,8 +240,3 @@ if __name__ == '__main__':
 
     thread1.join()
     thread2.join()
-
-
-       
-
-
