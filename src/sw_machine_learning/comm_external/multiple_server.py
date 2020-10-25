@@ -156,9 +156,27 @@ class Server(threading.Thread):
         self.timer.start()
 
 def main():
+    if len(sys.argv) != 3:
+        print('Invalid number of arguments')
+        print('python server.py [IP address] [groupID]')
+        sys.exit()
 
-    my_server1 = Server("127.0.0.1", 8080, 7)
+    # ip_addr = sys.argv[1]
+    # port_num = int(sys.argv[2])
+    # group_id = sys.argv[3]
+
+    ip_addr = sys.argv[1]
+    port_num1 = 8081
+    port_num2 = 8082
+    port_num3 = 8083
+    group_id = sys.argv[2]
+
+    my_server1 = Server(ip_addr, port_num1, group_id)
+    my_server2 = Server(ip_addr, port_num2, group_id)
+    my_server3 = Server(ip_addr, port_num3, group_id)
     my_server1.start()
+    my_server2.start()
+    my_server3.start()
 
 
 if __name__ == '__main__':

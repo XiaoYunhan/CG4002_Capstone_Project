@@ -9,14 +9,14 @@ import torch.nn as nn
 
 from sklearn.preprocessing import MinMaxScaler
 
-from .src.models.mlp import *
-from ..comm_external.socket_server import *
-from ..comm_external.DB_Client import connect
+from src.models.mlp import *
+from comm_external.multiple_server import *
+#from ..comm_external.DB_Client import connect
 
 IP_ADDRESS = "127.0.0.1"
 PORT = 8080
 GROUP = 7
-IDLE_FRAME = "-1/-1/-1/-1/-1/-1"
+IDLE_FRAME = "-1/-1/-1/-1/-1/-1/-1/-1/-1/-1/-1/-1"
 IGNORE_FRAME = 10
 
 def init_server():
@@ -48,7 +48,7 @@ if __name__ == "__main__":
     frame = []
     while(1):
         if prev_msg != server.raw_data:
-            if server.raw_data == IDLE_FRAME:
+            if server.raw_data[len(server.raw_data.split("/").pop(0))+1:len(server.raw_data)] == IDLE_FRAME:
                 idle_count = idle_count + 1
                 if idle_count >= IGNORE_FRAME:
                     idle_count = 0
@@ -60,5 +60,5 @@ if __name__ == "__main__":
                 if frame.size() == 60:
                     df = torch.from_numpy(np.array(MinMaxScaler().fit_transform([frame]))).float()
                     out = eval_model(model, df)[0]
-                    connect(datetime.now().strftime("%d-%m-%y"), ACTIONS[out], 0, 0, 0, 0, 0, 0, 0, 0)
+                    #connect(datetime.now().strftime("%d-%m-%y"), ACTIONS[out], 0, 0, 0, 0, 0, 0, 0, 0)
                     del frame[0:19]

@@ -1,7 +1,21 @@
 #include <Wire.h> //for I2C communication
+#include<math.h>
+#include <string.h>
+
+//for comm use
+char receiveByte = "";
+int handshakeDone = 0;
+float rawData[12];
+char rawDataStr[12] = "";
+char dataPacket[20] = "";
+
+float rotXWArray[11] = {0.0};
+float rotYWArray[11] = {0.0};
+float rotZWArray[11] = {0.0};
 
 //counter for serial printing
-int count = 0;
+int countIndex = 0;
+int counter = 0;
 
 //store raw data of accel and gyro
 long accelXW, accelYW, accelZW;  
@@ -20,18 +34,19 @@ float rotXA, rotYA, rotZA;
 unsigned long currentMillis, previousMillis;
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   Wire.begin(); //initialise I2C communication
   setupMPUW();
   setupMPUA();
 }
 
 void loop() {
+  initHandshake(); 
   recordAccelRegistersW(); //pre-processing
   recordGyroRegistersW();
   recordAccelRegistersA(); //pre-processing
   recordGyroRegistersA();
-  printData();
+  updateGyro();
   delay(100);
 }
 
@@ -93,6 +108,11 @@ void processAccelDataW() {
   gForceXW = accelXW / 16384.0;
   gForceYW = accelYW / 16384.0;
   gForceZW = accelZW / 16384.0;
+
+  //for comm use
+  rawData[3] = gForceXW;
+  rawData[4] = gForceYW;
+  rawData[5] = gForceZW; 
 }
 
 void recordAccelRegistersA() {
@@ -113,6 +133,11 @@ void processAccelDataA() {
   gForceXA = accelXA / 16384.0;
   gForceYA = accelYA / 16384.0;
   gForceZA = accelZA / 16384.0;
+
+  //for comm use
+  rawData[9] = gForceXA;
+  rawData[10] = gForceYA;
+  rawData[11] = gForceZA;   
 }
 
 void recordGyroRegistersW() {
@@ -133,6 +158,11 @@ void processGyroDataW() {
   rotXW = gyroXW / 131.0;
   rotYW = gyroYW / 131.0;
   rotZW = gyroZW / 131.0;
+
+  //for comm use
+  rawData[0] = rotXW;
+  rawData[1] = rotYW;
+  rawData[2] = rotZW;
 }
 
 void recordGyroRegistersA() {
@@ -153,13 +183,64 @@ void processGyroDataA() {
   rotXA = gyroXA / 131.0;
   rotYA = gyroYA / 131.0;
   rotZA = gyroZA / 131.0;
+
+  //for comm use
+  rawData[6] = rotXA;
+  rawData[7] = rotYA;
+  rawData[8] = rotZA; 
+}
+
+void updateGyro() {
+  float meanX=0, meanY=0, meanZ=0, sumX=0, sumY=0, sumZ=0, differenceX=0, differenceY=0, differenceZ=0, totalDifference=0, sqrtDifference=0;
+  countIndex = counter % 10; //0-9 repeatedly
+
+  //sum values in array
+  for (int i=0; i<10; i++) {
+    sumX += rotXWArray[i];
+    sumY += rotYWArray[i];
+    sumZ += rotZWArray[i];
+  }
+  meanX = sumX / 10.0;
+//  Serial.print(meanX); Serial.print(" ");
+  meanY = sumY / 10.0;
+  meanZ = sumZ / 10.0;
+
+  //save new value into index 10
+  rotXWArray[10] = rotXW;
+  rotYWArray[10] = rotYW;
+  rotZWArray[10] = rotZW;
+  
+  differenceX = sq(meanX - rotXWArray[10]);
+//  Serial.print(differenceX); Serial.println(" ");
+  differenceY = sq(meanY - rotYWArray[10]);
+  differenceZ = sq(meanZ - rotZWArray[10]);
+
+  totalDifference = differenceX + differenceY + differenceZ;
+  sqrtDifference = sqrt(totalDifference);
+
+//  Serial.println(sqrtDifference);
+
+  //save value in counter index
+  rotXWArray[countIndex] = rotXW;
+  rotYWArray[countIndex] = rotYW;
+  rotZWArray[countIndex] = rotZW;  
+  
+  counter++;
+  if (counter > 5) {
+    Serial.print(counter-5); Serial.print("/");
+    if (sqrtDifference < 10) {
+      Serial.println("-1/-1/-1/-1/-1/-1/-1/-1/-1/-1/-1/-1/e");
+    }
+    else {
+      //printData();
+      processData();
+      delay(50);
+    }
+  }
 }
 
 //Gyro x,y,z & Acc x,y,z
 void printData() {
-  count++;
-  Serial.print(count);
-  Serial.print(" ");
   Serial.print(rotXW, 4);
   Serial.print(" ");
   Serial.print(rotYW, 4);
@@ -183,4 +264,68 @@ void printData() {
   Serial.print(gForceYA, 4);
   Serial.print(" ");
   Serial.println(gForceZA, 4);
+}
+
+void initHandshake() {
+  while (!handshakeDone) {
+    if (Serial.available()) {
+      receiveByte = Serial.read();
+      receiveByte = (char)receiveByte;
+      if (receiveByte == 'H') {
+        //Serial.println("Received 'H' from laptop.");
+        Serial.write("ACK"); // Send 'ACK' to Laptop
+        delay(500);
+        handshakeDone = 1;
+        break;
+      }
+    }
+  }
+}
+
+typedef struct {
+  float data1;
+  float data2;
+  float data3;
+  float data4;
+  float data5;
+  float data6;
+} DataPacketStrcut;
+
+void processData() {
+  memset(dataPacket, 0, sizeof(dataPacket));
+  memset(rawDataStr, 0, sizeof(rawDataStr));
+  rawData[0] = rotXW;
+  rawData[1] = rotYW;
+  rawData[2] = rotZW;
+  rawData[3] = gForceXW;
+  rawData[4] = gForceYW;
+  rawData[5] = gForceZW;
+  rawData[6] = rotXA;
+  rawData[7] = rotYA;
+  rawData[8] = rotZA;
+  rawData[9] = gForceXA;
+  rawData[10] = gForceYA;
+  rawData[11] = gForceZA;
+  
+  for(int i = 0; i < 12; i++) {
+    char tempChar[7];
+    dtostrf(rawData[i], 7, 4, tempChar);
+    strcat(dataPacket, tempChar);
+    strcat(dataPacket, rawDataStr);
+    strcat(dataPacket,"/");
+  }
+  
+  char checksumByte[2] = "";
+  //checksumByte[0] = getChecksum(dataPacket);
+  strcat(dataPacket,checksumByte);
+  strcat(dataPacket, "e");
+  
+  Serial.write(dataPacket);
+  Serial.println("");
+}
+
+char getChecksum(char dataPacket) {
+  int len = strlen(dataPacket);
+  char checksum = 0;
+  return checksum;
 }
