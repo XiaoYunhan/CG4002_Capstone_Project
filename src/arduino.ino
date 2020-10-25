@@ -1,52 +1,57 @@
 #include <Wire.h> //for I2C communication
+#include<math.h>
 #include <string.h>
 
 //for comm use
 char receiveByte = "";
 int handshakeDone = 0;
-float rawData[6];
-char rawDataStr[6] = "";
+float rawData[12];
+char rawDataStr[12] = "";
 char dataPacket[20] = "";
 
+float rotXWArray[11] = {0.0};
+float rotYWArray[11] = {0.0};
+float rotZWArray[11] = {0.0};
+
+//counter for serial printing
+int countIndex = 0;
+int counter = 0;
+
 //store raw data of accel and gyro
-long accelX, accelY, accelZ;  
-long gyroX, gyroY, gyroZ;
+long accelXW, accelYW, accelZW;  
+long gyroXW, gyroYW, gyroZW;
+
+long accelXA, accelYA, accelZA;  
+long gyroXA, gyroYA, gyroZA;
 
 //calculate accel and gyro in degree and g
-float gForceX, gForceY, gForceZ;
-float rotX, rotY, rotZ;
+float gForceXW, gForceYW, gForceZW;
+float rotXW, rotYW, rotZW;
 
-//detect start/end move
-boolean isStartDetected = false;
-boolean toPrint = false;
-float minGForceX=0.8000, minGForceY=0.2000, minGForceZ=0;
-float maxGForceX=1.1000, maxGForceY=0.4000, maxGForceZ=0.3000;
-//float minGForceX=0.8000, minGForceY=0.1000, minGForceZ=0.1000;
-//float maxGForceX=1.1000, maxGForceY=0.3000, maxGForceZ=0.2000;
-int startCount=0;
-int startPeriod = 15;
-int startInterval = 1000;
+float gForceXA, gForceYA, gForceZA;
+float rotXA, rotYA, rotZA;
 
 unsigned long currentMillis, previousMillis;
 
 void setup() {
   Serial.begin(115200);
   Wire.begin(); //initialise I2C communication
-  setupMPU();
+  setupMPUW();
+  setupMPUA();
 }
 
 void loop() {
-  initHandshake();  
-  recordAccelRegisters(); //pre-processing
-  recordGyroRegisters();
-  //printData();
-  //startMove();
-  processData();
+  initHandshake(); 
+  recordAccelRegistersW(); //pre-processing
+  recordGyroRegistersW();
+  recordAccelRegistersA(); //pre-processing
+  recordGyroRegistersA();
+  updateGyro();
   delay(100);
 }
 
 //Establish communication with MPU and set up needed registers to read data from
-void setupMPU() {
+void setupMPUW() {
   Wire.beginTransmission(0b1101000); //I2C address of MPU
   Wire.write(0x6B); //Power Management
   Wire.write(0b00000000); //Power on MPU6050
@@ -65,110 +70,200 @@ void setupMPU() {
   Wire.endTransmission();
 }
 
+void setupMPUA() {
+  Wire.beginTransmission(0b1101001); //I2C address of MPU
+  Wire.write(0x6B); //Power Management
+  Wire.write(0b00000000); //Power on MPU6050
+  Wire.endTransmission();
+
+  //Gyro configuration. 
+  Wire.beginTransmission(0b1101001);
+  Wire.write(0x1B); 
+  Wire.write(0x00000000); //Set gyro full scale to +/- 250deg/sec
+  Wire.endTransmission();
+  
+  //Acc configuration. 
+  Wire.beginTransmission(0b1101001); 
+  Wire.write(0x1C); 
+  Wire.write(0b00000000); //Set acc full scale range to +/- 2g
+  Wire.endTransmission();
+}
+
 //retrieving raw data
-void recordAccelRegisters() {
+void recordAccelRegistersW() {
   Wire.beginTransmission(0b1101000); //I2C address of MPU6050
   Wire.write(0x3B); //Starting register for acc readings.
   Wire.endTransmission();
   Wire.requestFrom(0b1101000,6);  //Request 6 acc registers (3B-40)
 
   while(Wire.available() < 6);
-  accelX = Wire.read()<<8|Wire.read();  //Store first two bytes 
-  accelY = Wire.read()<<8|Wire.read();  //Store middle two bytes
-  accelZ = Wire.read()<<8|Wire.read();  //Store last two bytes
-  processAccelData();
+  accelXW = Wire.read()<<8|Wire.read();  //Store first two bytes 
+  accelYW = Wire.read()<<8|Wire.read();  //Store middle two bytes
+  accelZW = Wire.read()<<8|Wire.read();  //Store last two bytes
+  processAccelDataW();
 }
 
-void processAccelData() {
+void processAccelDataW() {
   //convert data to g. LSB per g = 16384.0
-  gForceX = accelX / 16384.0;
-  gForceY = accelY / 16384.0;
-  gForceZ = accelZ / 16384.0;
-    
+  gForceXW = accelXW / 16384.0;
+  gForceYW = accelYW / 16384.0;
+  gForceZW = accelZW / 16384.0;
+
   //for comm use
-  rawData[3] = (gForceX);
-  rawData[4] = gForceY;
-  rawData[5] = gForceZ; 
+  rawData[3] = gForceXW;
+  rawData[4] = gForceYW;
+  rawData[5] = gForceZW; 
 }
 
-void recordGyroRegisters() {
+void recordAccelRegistersA() {
+  Wire.beginTransmission(0b1101001); //I2C address of MPU6050
+  Wire.write(0x3B); //Starting register for acc readings.
+  Wire.endTransmission();
+  Wire.requestFrom(0b1101001,6);  //Request 6 acc registers (3B-40)
+
+  while(Wire.available() < 6);
+  accelXA = Wire.read()<<8|Wire.read();  //Store first two bytes 
+  accelYA = Wire.read()<<8|Wire.read();  //Store middle two bytes
+  accelZA = Wire.read()<<8|Wire.read();  //Store last two bytes
+  processAccelDataA();
+}
+
+void processAccelDataA() {
+  //convert data to g. LSB per g = 16384.0
+  gForceXA = accelXA / 16384.0;
+  gForceYA = accelYA / 16384.0;
+  gForceZA = accelZA / 16384.0;
+
+  //for comm use
+  rawData[9] = gForceXA;
+  rawData[10] = gForceYA;
+  rawData[11] = gForceZA;   
+}
+
+void recordGyroRegistersW() {
   Wire.beginTransmission(0b1101000); //I2C address of MPU6050
   Wire.write(0x43); //Starting address for gyro readings 
   Wire.endTransmission();
   Wire.requestFrom(0b1101000,6);  //Request 6 gyro registers (43-48)
 
   while(Wire.available() < 6);
-  gyroX = Wire.read()<<8|Wire.read();  //Store first two bytes into
-  gyroY = Wire.read()<<8|Wire.read();  //Store middle two bytes into
-  gyroZ = Wire.read()<<8|Wire.read();  //Store last two bytes into
-  processGyroData();
+  gyroXW = Wire.read()<<8|Wire.read();  //Store first two bytes into
+  gyroYW = Wire.read()<<8|Wire.read();  //Store middle two bytes into
+  gyroZW = Wire.read()<<8|Wire.read();  //Store last two bytes into
+  processGyroDataW();
 }
 
-void processGyroData() {
+void processGyroDataW() {
   //convert data to degrees. LSB per degrees per second = 131.0;
-  rotX = gyroX / 131.0;
-  rotY = gyroY / 131.0;
-  rotZ = gyroZ / 131.0;
+  rotXW = gyroXW / 131.0;
+  rotYW = gyroYW / 131.0;
+  rotZW = gyroZW / 131.0;
 
   //for comm use
-  rawData[0] = rotX;
-  rawData[1] = rotY;
-  rawData[2] = rotZ;
+  rawData[0] = rotXW;
+  rawData[1] = rotYW;
+  rawData[2] = rotZW;
 }
 
-void startMove() {
-  //detect start move
-  if (gForceX >= minGForceX && gForceX <= maxGForceX) {
-    if (gForceY >= minGForceY && gForceY <= maxGForceY) {
-      if (gForceZ >= minGForceZ && gForceZ <= maxGForceZ) { 
-        startCount++;
-        Serial.print(startCount);
-        Serial.print(" ");
-        isStartDetected = true;
-        previousMillis=millis();
-      }
+void recordGyroRegistersA() {
+  Wire.beginTransmission(0b1101001); //I2C address of MPU6050
+  Wire.write(0x43); //Starting address for gyro readings 
+  Wire.endTransmission();
+  Wire.requestFrom(0b1101001,6);  //Request 6 gyro registers (43-48)
+
+  while(Wire.available() < 6);
+  gyroXA = Wire.read()<<8|Wire.read();  //Store first two bytes into
+  gyroYA = Wire.read()<<8|Wire.read();  //Store middle two bytes into
+  gyroZA = Wire.read()<<8|Wire.read();  //Store last two bytes into
+  processGyroDataA();
+}
+
+void processGyroDataA() {
+  //convert data to degrees. LSB per degrees per second = 131.0;
+  rotXA = gyroXA / 131.0;
+  rotYA = gyroYA / 131.0;
+  rotZA = gyroZA / 131.0;
+
+  //for comm use
+  rawData[6] = rotXA;
+  rawData[7] = rotYA;
+  rawData[8] = rotZA; 
+}
+
+void updateGyro() {
+  float meanX=0, meanY=0, meanZ=0, sumX=0, sumY=0, sumZ=0, differenceX=0, differenceY=0, differenceZ=0, totalDifference=0, sqrtDifference=0;
+  countIndex = counter % 10; //0-9 repeatedly
+
+  //sum values in array
+  for (int i=0; i<10; i++) {
+    sumX += rotXWArray[i];
+    sumY += rotYWArray[i];
+    sumZ += rotZWArray[i];
+  }
+  meanX = sumX / 10.0;
+//  Serial.print(meanX); Serial.print(" ");
+  meanY = sumY / 10.0;
+  meanZ = sumZ / 10.0;
+
+  //save new value into index 10
+  rotXWArray[10] = rotXW;
+  rotYWArray[10] = rotYW;
+  rotZWArray[10] = rotZW;
+  
+  differenceX = sq(meanX - rotXWArray[10]);
+//  Serial.print(differenceX); Serial.println(" ");
+  differenceY = sq(meanY - rotYWArray[10]);
+  differenceZ = sq(meanZ - rotZWArray[10]);
+
+  totalDifference = differenceX + differenceY + differenceZ;
+  sqrtDifference = sqrt(totalDifference);
+
+//  Serial.println(sqrtDifference);
+
+  //save value in counter index
+  rotXWArray[countIndex] = rotXW;
+  rotYWArray[countIndex] = rotYW;
+  rotZWArray[countIndex] = rotZW;  
+  
+  counter++;
+  if (counter > 5) {
+    Serial.print(counter-5); Serial.print("/");
+    if (sqrtDifference < 10) {
+      Serial.println("-1/-1/-1/-1/-1/-1/-1/-1/-1/-1/-1/-1/e");
+    }
+    else {
+      //printData();
+      processData();
+      delay(50);
     }
   }
-  currentMillis = millis();
-  //no detection
-  if ((currentMillis - previousMillis > startInterval) && (isStartDetected)) {
-    isStartDetected = false;
-    startCount = 0;
-  }
-
-  //detection for stated duration
-  if (startCount == startPeriod) {
-    toPrint = !toPrint;
-    startCount = 0;
-  }
-
-  if (toPrint == false) {
-    Serial.println("-1/-1/-1/-1/-1/-1/e");
-  } 
-
-  if (toPrint == true) {
-    processData();
-    //printData();
-  } 
 }
 
 //Gyro x,y,z & Acc x,y,z
 void printData() {
-  //count++;
-  //Serial.print(count);
-  //Serial.print(" ");
-  Serial.print(rotX, 4);
+  Serial.print(rotXW, 4);
   Serial.print(" ");
-  Serial.print(rotY, 4);
+  Serial.print(rotYW, 4);
   Serial.print(" ");
-  Serial.print(rotZ, 4);
+  Serial.print(rotZW, 4);
   Serial.print(" ");
-  Serial.print(gForceX, 4);
+  Serial.print(gForceXW, 4);
   Serial.print(" ");
-  Serial.print(gForceY, 4);
+  Serial.print(gForceYW, 4);
   Serial.print(" ");
-  Serial.print(gForceZ, 4);
+  Serial.print(gForceZW, 4);
   Serial.print(" ");
+  Serial.print(rotXA, 4);
+  Serial.print(" ");
+  Serial.print(rotYA, 4);
+  Serial.print(" ");
+  Serial.print(rotZA, 4);
+  Serial.print(" ");
+  Serial.print(gForceXA, 4);
+  Serial.print(" ");
+  Serial.print(gForceYA, 4);
+  Serial.print(" ");
+  Serial.println(gForceZA, 4);
 }
 
 void initHandshake() {
@@ -187,15 +282,35 @@ void initHandshake() {
   }
 }
 
+typedef struct {
+  float data1;
+  float data2;
+  float data3;
+  float data4;
+  float data5;
+  float data6;
+} DataPacketStrcut;
+
 void processData() {
   memset(dataPacket, 0, sizeof(dataPacket));
   memset(rawDataStr, 0, sizeof(rawDataStr));
-  for(int i = 0; i < 6; i++) {
-    char tempChar[5];
-    dtostrf(rawData[i], 8, 4, tempChar);
+  rawData[0] = rotXW;
+  rawData[1] = rotYW;
+  rawData[2] = rotZW;
+  rawData[3] = gForceXW;
+  rawData[4] = gForceYW;
+  rawData[5] = gForceZW;
+  rawData[6] = rotXA;
+  rawData[7] = rotYA;
+  rawData[8] = rotZA;
+  rawData[9] = gForceXA;
+  rawData[10] = gForceYA;
+  rawData[11] = gForceZA;
+  
+  for(int i = 0; i < 12; i++) {
+    char tempChar[7];
+    dtostrf(rawData[i], 7, 4, tempChar);
     strcat(dataPacket, tempChar);
-    //sensorInt = sensorValues[i]*100;
-    //itoa(rawData[i], rawDataStr, 10);
     strcat(dataPacket, rawDataStr);
     strcat(dataPacket,"/");
   }
@@ -205,7 +320,8 @@ void processData() {
   strcat(dataPacket,checksumByte);
   strcat(dataPacket, "e");
   
-  Serial.println(dataPacket);
+  Serial.write(dataPacket);
+  Serial.println("");
 }
 
 char getChecksum(char dataPacket) {
