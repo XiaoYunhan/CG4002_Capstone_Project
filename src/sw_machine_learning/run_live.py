@@ -1,7 +1,6 @@
 import os
 
 import numpy as np
-import pandas as pd
 from datetime import datetime
 
 import torch
@@ -50,19 +49,20 @@ if __name__ == "__main__":
     frame = []
     while(1):
         #print(server.raw_data)
-        if prev_msg != server.raw_data:
-            if server.raw_data[len(server.raw_data.split("/").pop(0))+1:len(server.raw_data)] == IDLE_FRAME:
+        raw_data = '/'.join(server.raw.split("/")[1:7])
+        if prev_msg != raw_data:
+            if raw_data == IDLE_FRAME:
                 idle_count = idle_count + 1
                 if idle_count >= IGNORE_FRAME:
                     idle_count = 0
                     frame.clear()
             else:
-                prev_msg = server.raw_data
-                s = server.raw_data.split("/").pop(0)
-                frame = frame + s
-                if frame.size() == 60:
+                prev_msg = raw_data
+                idle_count = 0
+                frame = frame + raw_data.split("/")
+                if len(frame) == 60:
                     df = torch.from_numpy(np.array(MinMaxScaler().fit_transform([frame]))).float()
                     out = eval_model(model, df)[0]
                     #connect(datetime.now().strftime("%d-%m-%y"), ACTIONS[out], 0, 0, 0, 0, 0, 0, 0, 0)
-                    print(ACTIONS[out])
-                    del frame[0:17]
+                    print("Predicted Dance Move: " + ACTIONS[out])
+                    del frame[0:12]
