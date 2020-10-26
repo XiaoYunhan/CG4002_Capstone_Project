@@ -63,8 +63,8 @@ def train_model(model, train_loader, val_loader, model_save_path, EPOCHS=300, LE
         model.train()
         for X_train_batch, Y_train_batch in train_loader:
             X_train_batch, Y_train_batch = X_train_batch.to(device), Y_train_batch.to(device)
-            X_train_batch = X_train_batch.unsqueeze(0)
-            X_train_batch = X_train_batch.permute(1, 0, 2)
+            #X_train_batch = X_train_batch.unsqueeze(0)
+            #X_train_batch = X_train_batch.permute(1, 0, 2)
             optimizer.zero_grad()
             Y_train_pred = model(X_train_batch)
             Y_train_batch = Y_train_batch.view(-1)
@@ -87,8 +87,9 @@ def train_model(model, train_loader, val_loader, model_save_path, EPOCHS=300, LE
             model.eval()
             for X_val_batch, Y_val_batch in val_loader:
                 X_val_batch, Y_val_batch = X_val_batch.to(device), Y_val_batch.to(device)
-                X_val_batch = X_val_batch.unsqueeze(0)
-                Y_val_pred = model(X_val_batch).unsqueeze(0)
+                #X_val_batch = X_val_batch.unsqueeze(0)
+                #Y_val_pred = model(X_val_batch).unsqueeze(0)
+                Y_val_pred = model(X_val_batch)
                 Y_val_batch = Y_val_batch.view(-1) 
                 
                 val_loss = criterion(Y_val_pred, Y_val_batch)

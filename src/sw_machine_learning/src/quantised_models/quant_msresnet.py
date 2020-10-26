@@ -46,7 +46,7 @@ class BasicBlock3x3(nn.Module):
         if self.downsample is not None:
             residual = self.downsample(x)
 
-        out += residual
+        #out += residual
         out = self.relu(out)
 
         return out

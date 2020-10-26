@@ -7,16 +7,16 @@ from brevitas.core.quant import QuantType
 class QuantMLP(nn.Module):
     def __init__(self, num_feature, num_class):
         super(QuantMLP, self).__init__()
-        self.layer_1 = qnn.QuantLinear(num_feature, 256, bias=False, weight_quant_type=QuantType.FP, weight_bit_width=8)
-        self.layer_2 = qnn.QuantLinear(256, 128, bias=False, weight_quant_type=QuantType.FP, weight_bit_width=8)
-        self.layer_3 = qnn.QuantLinear(128, 64, bias=False, weight_quant_type=QuantType.FP, weight_bit_width=8)
-        self.layer_out = qnn.QuantLinear(64, num_class, bias=False, weight_quant_type=QuantType.FP, weight_bit_width=8)
+        self.layer_1 = qnn.QuantLinear(num_feature, 64, bias=False, weight_quant_type=QuantType.FP, weight_bit_width=8)
+        self.layer_2 = qnn.QuantLinear(64, 128, bias=False, weight_quant_type=QuantType.FP, weight_bit_width=8)
+        self.layer_3 = qnn.QuantLinear(128, 256, bias=False, weight_quant_type=QuantType.FP, weight_bit_width=8)
+        self.layer_out = qnn.QuantLinear(256, num_class, bias=False, weight_quant_type=QuantType.FP, weight_bit_width=8)
         
         self.relu = qnn.QuantReLU(quant_type=QuantType.FP, bit_width=8, max_val=6)
         self.dropout = nn.Dropout(p=0.2)
-        self.batchnorm1 = nn.BatchNorm1d(256)
+        self.batchnorm1 = nn.BatchNorm1d(64)
         self.batchnorm2 = nn.BatchNorm1d(128)
-        self.batchnorm3 = nn.BatchNorm1d(64)
+        self.batchnorm3 = nn.BatchNorm1d(256)
         
     def forward(self, x):
         x = self.layer_1(x)

@@ -1,7 +1,6 @@
 import os
 
 import numpy as np
-import pandas as pd
 from datetime import datetime
 
 import torch
@@ -21,7 +20,8 @@ IGNORE_FRAME = 10
 
 def init_server():
     my_server = Server(IP_ADDRESS, PORT, GROUP)
-    my_server.run()
+    my_server.start()
+    print("Server Started")
     return my_server
 
 
@@ -29,6 +29,7 @@ def load_model(PATH):
     model = ffnn()
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model.load_state_dict(torch.load(PATH + "mlp_1510_0451.pt", map_location=device))
+    print("Model Loaded")
     return model
 
 
@@ -47,18 +48,21 @@ if __name__ == "__main__":
     idle_count = 0
     frame = []
     while(1):
-        if prev_msg != server.raw_data:
-            if server.raw_data[len(server.raw_data.split("/").pop(0))+1:len(server.raw_data)] == IDLE_FRAME:
+        #print(server.raw_data)
+        raw_data = '/'.join(server.raw.split("/")[1:7])
+        if prev_msg != raw_data:
+            if raw_data == IDLE_FRAME:
                 idle_count = idle_count + 1
                 if idle_count >= IGNORE_FRAME:
                     idle_count = 0
                     frame.clear()
             else:
-                prev_msg = server.raw_data
-                s = server.raw_data.split("/").pop(0)
-                frame = frame + s
-                if frame.size() == 60:
+                prev_msg = raw_data
+                idle_count = 0
+                frame = frame + raw_data.split("/")
+                if len(frame) == 60:
                     df = torch.from_numpy(np.array(MinMaxScaler().fit_transform([frame]))).float()
                     out = eval_model(model, df)[0]
                     #connect(datetime.now().strftime("%d-%m-%y"), ACTIONS[out], 0, 0, 0, 0, 0, 0, 0, 0)
-                    del frame[0:19]
+                    print("Predicted Dance Move: " + ACTIONS[out])
+                    del frame[0:12]
