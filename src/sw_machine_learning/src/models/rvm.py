@@ -1,4 +1,5 @@
 from skbayes.rvm_ard_models import RVC
+from sklearn.metrics import classification_report
 
 import pandas, numpy
 
@@ -22,4 +23,6 @@ if __name__ == "__main__":
 
     clf.fit(X, Y)
     y_predict = clf.predict(X)
-    print ([y_predict, Y])
+    
+    print(classification_report(Y, y_predict,
+                            target_names=[0, 1]))

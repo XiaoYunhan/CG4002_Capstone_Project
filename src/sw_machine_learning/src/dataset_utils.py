@@ -19,7 +19,7 @@ def import_data(data_path, DATA_LEN):
     df = pd.read_csv(data_path, sep='\s+', names=cols)
     X = df.loc[:, :DATA_LEN-1]
     Y = df.loc[:, DATA_LEN:]
-    
+   
     print("Data Loaded from File")
     return X, Y
 

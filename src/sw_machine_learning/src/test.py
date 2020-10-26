@@ -12,8 +12,9 @@ def eval_model(model, test_loader, Y_test):
         model.eval()
         for X_batch, _ in test_loader:
             X_batch = X_batch.to(device)
-            X_batch = X_batch.unsqueeze(0)
-            Y_test_pred = model(X_batch).unsqueeze(0)
+            #X_batch = X_batch.unsqueeze(0)
+            #Y_test_pred = model(X_batch).unsqueeze(0)
+            Y_test_pred = model(X_batch)
             Y_pred_softmax = torch.log_softmax(Y_test_pred, dim = 1)
             _, Y_pred_tags = torch.max(Y_pred_softmax, dim = 1)
             Y_pred_list.append(Y_pred_tags.cpu().numpy())
