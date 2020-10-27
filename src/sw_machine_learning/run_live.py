@@ -53,8 +53,8 @@ def process_data():
     move_frame = []
     pos_frame = []
     while 1:
-        move_data = '/'.join(server.raw.split("/")[1:7])
-        pos_data = '/'.join(server.raw.split("/")[7:13])
+        move_data = '/'.join(server.raw_data.split("/")[1:7])
+        pos_data = '/'.join(server.raw_data.split("/")[7:13])
         if prev_msg != move_data:
             if TIMEOUT > 0:
                 TIMEOUT = TIMEOUT - 1
@@ -72,21 +72,20 @@ def process_data():
                     out = eval_model(model, df)[0]
                     #connect(datetime.now().strftime("%d-%m-%y"), ACTIONS[out], 0, 0, 0, 0, 0, 0, 0, 0)
                     print("Predicted Dance Move: " + ACTIONS[out])
-                    del move_frame[0:12]
+                    del move_frame[0:12] 
             
-            # if pos_data == IDLE_FRAME:
-            #     pos_frame.clear()
-            # else:
-            #     pos_frame = pos_frame + pos_data.split("/")
-            #     if len(pos_data) == 30:
-            #         pos_out = rf.predict(np.array(pos_frame))
-            #         if TIMEOUT == 0:
-            #             if pos_out == 0:
-            #                 print("Movement LEFT")
-            #             else:
-            #                 print("Movement RIGHT")
-                        
-            #             TIMEOUT = 10
+            if pos_data == IDLE_FRAME:
+                pos_frame.clear()
+            else:
+                pos_frame = pos_frame + pos_data.split("/")
+                if len(pos_data) == 30:
+                    pos_out = rf.predict(np.array(pos_frame))
+                    if TIMEOUT == 0:
+                        if pos_out == 0:
+                            print("Movement LEFT")
+                        else:
+                            print("Movement RIGHT")
+                        TIMEOUT = 10
 
 
 
