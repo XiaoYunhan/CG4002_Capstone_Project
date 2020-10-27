@@ -6,8 +6,8 @@ import multiprocessing
 
 def process_labels(labels):
     AXIS = 6
-    LINES = 10
-    LINE_LEN = 60
+    LINES = 5
+    LINE_LEN = 30
     cols = []
     for i in range(LINE_LEN + 1):
         cols.append(i)

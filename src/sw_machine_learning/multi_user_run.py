@@ -13,6 +13,7 @@ import torch.nn as nn
 from sklearn.preprocessing import MinMaxScaler
 
 from src.models.mlp import *
+from sklearn.ensemble import RandomForestRegressor
 from comm_external.multiple_server import *
 
 IP_ADDRESS_1 = "127.0.0.1"

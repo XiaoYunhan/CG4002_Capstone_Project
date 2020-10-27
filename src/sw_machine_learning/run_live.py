@@ -2,6 +2,7 @@ import os
 
 import numpy as np
 from datetime import datetime
+from joblib import load
 
 import torch
 import torch.nn as nn
@@ -10,6 +11,7 @@ from sklearn.preprocessing import MinMaxScaler
 
 from src.models.mlp import *
 from comm_external.multiple_server import *
+from sklearn.ensemble import RandomForestRegressor
 #from ..comm_external.DB_Client import connect
 
 IP_ADDRESS = "127.0.0.1"
@@ -42,30 +44,51 @@ def eval_model(model, frame):
 
 def process_data():  
     model = load_model(os.getcwd() + "/models/")
+    rf = load('models/rf.joblib')
     model.eval()
     server = init_server()
     prev_msg = ""
     idle_count = 0
-    frame = []
-    while(1):
-        #print(server.raw_data)
-        raw_data = '/'.join(server.raw.split("/")[1:7])
-        if prev_msg != raw_data:
-            if raw_data == IDLE_FRAME:
+    TIMEOUT = 0
+    move_frame = []
+    pos_frame = []
+    while 1:
+        move_data = '/'.join(server.raw.split("/")[1:7])
+        pos_data = '/'.join(server.raw.split("/")[7:13])
+        if prev_msg != move_data:
+            if TIMEOUT > 0:
+                TIMEOUT = TIMEOUT - 1
+            if move_data == IDLE_FRAME:
                 idle_count = idle_count + 1
                 if idle_count >= IGNORE_FRAME:
                     idle_count = 0
-                    frame.clear()
+                    move_frame.clear()
             else:
-                prev_msg = raw_data
+                prev_msg = move_data
                 idle_count = 0
-                frame = frame + raw_data.split("/")
-                if len(frame) == 60:
-                    df = torch.from_numpy(np.array(MinMaxScaler().fit_transform([frame]))).float()
+                move_frame = move_frame + move_data.split("/")
+                if len(move_frame) == 60:
+                    df = torch.from_numpy(np.array(MinMaxScaler().fit_transform([move_frame]))).float()
                     out = eval_model(model, df)[0]
                     #connect(datetime.now().strftime("%d-%m-%y"), ACTIONS[out], 0, 0, 0, 0, 0, 0, 0, 0)
                     print("Predicted Dance Move: " + ACTIONS[out])
-                    del frame[0:12]
+                    del move_frame[0:12]
+            
+            # if pos_data == IDLE_FRAME:
+            #     pos_frame.clear()
+            # else:
+            #     pos_frame = pos_frame + pos_data.split("/")
+            #     if len(pos_data) == 30:
+            #         pos_out = rf.predict(np.array(pos_frame))
+            #         if TIMEOUT == 0:
+            #             if pos_out == 0:
+            #                 print("Movement LEFT")
+            #             else:
+            #                 print("Movement RIGHT")
+                        
+            #             TIMEOUT = 10
+
+
 
 if __name__ == "__main__":
     process_data()
