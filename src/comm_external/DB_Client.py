@@ -6,7 +6,7 @@ ssh -NfL 3306:b07-dancedashboard.cx4zc3f2utdt.ap-southeast-1.rds.amazonaws.com:5
 """
 
 def connect(date, dance_move, left_time, left_dancer, center_time, center_dancer, right_time, right_dancer, diff_in_timing, sync):
-    
+# def connect():
     """ Connect to the PostgreSQL database server """
     RDS_HOSTNAME = "localhost"
     # RDS_HOSTNAME = "b07-dancedashboard.cx4zc3f2utdt.ap-southeast-1.rds.amazonaws.com"
@@ -28,9 +28,11 @@ def connect(date, dance_move, left_time, left_dancer, center_time, center_dancer
         record = cursor.fetchone()
         print("You are connected to - ", record,"\n")
 
-        insertDanceDataQuery = "INSERT INTO dancedata VALUES (" + "'" + date + "'," + dance_move + "," + left_time + "," + left_dancer + "," + center_time + "," + center_dancer + "," + right_time + "," + right_dancer + "," + diff_in_timing + "," + "'" + sync + "')"
+        insertDanceDataQuery = "INSERT INTO dancedata VALUES (" + "'" + date + "'," +"'"+ dance_move +"'"+ "," +"'"+left_time +"'"+ "," + left_dancer + "," +"'"+ center_time +"'"+ "," + center_dancer + "," +"'"+ right_time +"'"+ "," + right_dancer + "," + diff_in_timing + "," + "'" + sync + "')"
         # record_to_insert = ()
+        print(insertDanceDataQuery)
         cursor.execute(insertDanceDataQuery)
+        print("inserted")
         
     except (Exception, psycopg2.Error) as error :
         print ("Error while connecting to PostgreSQL", error)
@@ -42,4 +44,5 @@ def connect(date, dance_move, left_time, left_dancer, center_time, center_dancer
             print("PostgreSQL connection is closed")
 
 if __name__ == '__main__':
-    connect()
+    connect("2020-10-27", "rocket", "21:03:30.204", "1", "21:03:45.304", "2", "21:02:30.998", "3" , "15.100", "No")
+    # connect()
