@@ -18,7 +18,7 @@ from Crypto.Cipher import AES
 from Crypto import Random
 
 uuid = "0000dfb0-0000-1000-8000-00805f9b34fb"
-beetleAddr = ['2C:AB:33:CC:63:F1'] #['2C:AB:33:CC:65:D4'] #F8:30:02:08:E9:59', '2C:AB:33:CC:63:F1', '2C:AB:33:CC:6C:85', '2C:AB:33:CC:6C:94']
+beetleAddr = ['2C:AB:33:CC:63:F1'] #'2C:AB:33:CC:65:D4',' F8:30:02:08:E9:59', '2C:AB:33:CC:63:F1', '2C:AB:33:CC:6C:85', '2C:AB:33:CC:6C:94']
 handshakeDone = [0, 0, 0, 0, 0, 0]
 global string
 receive = ""
@@ -66,7 +66,6 @@ class Client():
 
 
 def set_connection(addr, index):
-    #global handshakeDone
     #while True:
     print("Connecting beetle #" + str(index) + " now...")
     try:
@@ -98,7 +97,7 @@ def set_connection(addr, index):
                 startTime = 0.0
             else:
                 currTime = time.time()
-                if currTime - startTime >= 60:
+                if currTime - startTime >= 1000:
                     #beetle.disconnect()
                     re_connect(beetle, index)
                 else:
@@ -108,7 +107,7 @@ def set_connection(addr, index):
                print("Beetle #" + str(index) + " disconnected")
                #beetle.disconnect()
                set_connection(beetle, index)
-               break
+               #break
     
     while(True):
         if beetle.waitForNotifications(1000):
@@ -192,8 +191,6 @@ def init_handshake(serviceChar):
 
 if __name__ == '__main__':
   
-#    global index 
-#    index = 1
     def thread_internal(threadname, queue):
         index = 1
         with ThreadPoolExecutor(max_workers = len(beetleAddr)) as executor:
