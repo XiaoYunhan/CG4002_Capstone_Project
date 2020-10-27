@@ -28,7 +28,7 @@ def connect(date, dance_move, left_time, left_dancer, center_time, center_dancer
         record = cursor.fetchone()
         print("You are connected to - ", record,"\n")
 
-        insertDanceDataQuery = "INSERT INTO dancedata VALUES (" + "'" + date + "'," + dance_move + left_time + "," + left_dancer + "," + center_time + "," + center_dancer + "," + right_time + "," + right_dancer + "," + diff_in_timing + "," + "'" + sync + "')"
+        insertDanceDataQuery = "INSERT INTO dancedata VALUES (" + "'" + date + "'," + dance_move + "," + left_time + "," + left_dancer + "," + center_time + "," + center_dancer + "," + right_time + "," + right_dancer + "," + diff_in_timing + "," + "'" + sync + "')"
         # record_to_insert = ()
         cursor.execute(insertDanceDataQuery)
         
