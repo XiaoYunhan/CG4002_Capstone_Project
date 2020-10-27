@@ -194,18 +194,18 @@ def main():
         check = [my_server1.raw_data == STOP_PATTERN, my_server2.raw_data == STOP_PATTERN, my_server3.raw_data == STOP_PATTERN]
         if sync_stop == True and check.count(False) == 1:
             first_index = check.index(False)
-            if first_index == 1:
+            if first_index == 0:
                 first_timestamp = time.time() - my_server1.offset/1000
-            elif first_index == 2:
+            elif first_index == 1:
                 first_timestamp = time.time() - my_server2.offset/1000
             else:
                 first_timestamp = time.time() - my_server3.offset/1000
         if sync_stop == True and check.count(False) == 2:
             third_index = check.index(True)
         if sync_stop == True and check.count(False) == 3:
-            if third_index == 1:
+            if third_index == 0:
                 third_timestamp = time.time() - my_server1.offset/1000
-            elif third_index == 2:
+            elif third_index == 1:
                 third_timestamp = time.time() - my_server2.offset/1000
             else:
                 third_timestamp = time.time() - my_server3.offset/1000
