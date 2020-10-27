@@ -88,9 +88,9 @@ class Server(threading.Thread):
                     self.raw_data = decrypted_message.split("|")[0]
                     self.RTT = decrypted_message.split("|")[1]
                     self.offset = decrypted_message.split("|")[2]
-                    print("raw data: " + self.raw_data)
-                    print("RTT(ms): " + self.RTT)
-                    print("offset(ms): " + self.offset)
+                    #print("raw data: " + self.raw_data)
+                    #print("RTT(ms): " + self.RTT)
+                    #print("offset(ms): " + self.offset)
                     self.send_timestamp() # sendd_timestamp
                     self.set_next_action()  # Get new action
                 except Exception as e:

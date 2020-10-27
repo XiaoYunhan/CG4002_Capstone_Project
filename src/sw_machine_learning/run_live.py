@@ -49,15 +49,18 @@ def process_data():
     server = init_server()
     prev_msg = ""
     idle_count = 0
-    TIMEOUT = 0
+    MOVE_TIMEOUT = 0
+    POS_TIMEOUT = 0
     move_frame = []
     pos_frame = []
     while 1:
         move_data = '/'.join(server.raw_data.split("/")[1:7])
         pos_data = '/'.join(server.raw_data.split("/")[7:13])
         if prev_msg != move_data:
-            if TIMEOUT > 0:
-                TIMEOUT = TIMEOUT - 1
+            if MOVE_TIMEOUT > 0:
+                MOVE_TIMEOUT = MOVE_TIMEOUT - 1
+            if POS_TIMEOUT > 0:
+                POS_TIMEOUT = POS_TIMEOUT - 1
             if move_data == IDLE_FRAME:
                 idle_count = idle_count + 1
                 if idle_count >= IGNORE_FRAME:
@@ -80,12 +83,12 @@ def process_data():
                 pos_frame = pos_frame + pos_data.split("/")
                 if len(pos_data) == 30:
                     pos_out = rf.predict(np.array(pos_frame))
-                    if TIMEOUT == 0:
+                    if POS_TIMEOUT == 0:
                         if pos_out == 0:
                             print("Movement LEFT")
                         else:
                             print("Movement RIGHT")
-                        TIMEOUT = 10
+                        POS_TIMEOUT = 10
 
 
 
