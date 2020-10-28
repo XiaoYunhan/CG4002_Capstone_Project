@@ -139,16 +139,16 @@ def db_connect(queue):
     RDS_DATABASE = "justdance"
     RDS_PORT = 3306
     flag = False
-    date = ""
-    dance_move = ""
-    left_time = ""
-    left_dancer = ""
-    center_time = ""
-    center_dancer = ""
-    right_time = ""
-    right_dancer = ""
-    diff_in_timing = ""
-    sync = ""
+    date = "2020-10-27"
+    dance_move = "0"
+    left_time = "21:03:30.204"
+    left_dancer = "0"
+    center_time = "21:03:45.304"
+    center_dancer = "0"
+    right_time = "21:03:45.304"
+    right_dancer = "0"
+    diff_in_timing = "0"
+    sync = "Yes"
 
     connection = psycopg2.connect(user = RDS_USERNAME,
                                 password = RDS_PASSWORD,
@@ -166,11 +166,11 @@ def db_connect(queue):
         cmd = queue.get()
         for i in range(3):
             if cmd[i][0] != -1:
-                insertDanceDataQuery = "INSERT INTO dancedata VALUES (" + "'" + date + "'," +"'"+ cmd[i][0] +"'"+ "," +"'"+left_time +"'"+ "," + cmd[0][1] + "," +"'"+ center_time +"'"+ "," + cmd[1][1] + "," +"'"+ right_time +"'"+ "," + cmd[2][1] + "," + diff_in_timing + "," + "'" + sync + "')"
+                insertDanceDataQuery = "INSERT INTO dancedata VALUES (" + "'" + date + "'," +"'"+ ACTIONS[cmd[i][0]] +"'"+ "," +"'"+left_time +"'"+ "," + str(cmd[0][1]) + "," +"'"+ center_time +"'"+ "," + str(cmd[1][1]) + "," +"'"+ right_time +"'"+ "," + str(cmd[2][1]) + "," + diff_in_timing + "," + "'" + sync + "')"
                 flag = True
                 break
         if not flag:
-            insertDanceDataQuery = "INSERT INTO dancedata VALUES (" + "'" + date + "'," +"'"+ cmd[0][0] +"'"+ "," +"'"+left_time +"'"+ "," + cmd[0][1] + "," +"'"+ center_time +"'"+ "," + cmd[1][1] + "," +"'"+ right_time +"'"+ "," + cmd[2][1] + "," + diff_in_timing + "," + "'" + sync + "')"
+            insertDanceDataQuery = "INSERT INTO dancedata VALUES (" + "'" + date + "'," +"'"+ str(cmd[0][0]) +"'"+ "," +"'"+left_time +"'"+ "," + str(cmd[0][1]) + "," +"'"+ center_time +"'"+ "," + str(cmd[0][1]) + "," +"'"+ center_time +"'"+ "," + str(cmd[1][1]) + "," +"'"+ right_time +"'"+ "," + str(cmd[2][1]) + "," + diff_in_timing + "," + "'" + sync + "')"
             flag = False
         cursor.execute(insertDanceDataQuery)
 
