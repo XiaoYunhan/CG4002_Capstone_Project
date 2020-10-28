@@ -11,10 +11,10 @@ BATCH_SIZE = 32
 NUM_CLASSES = 3
 DATA_LEN = 60
 
-model_name = 'quant_mlp'
+model_name = 'mlp'
 
 _paths = {
-    'compiled'          : os.getcwd() + "/../../data/Raw Data/wk9/compiled.txt",
+    'compiled'          : os.getcwd() + "/../../data/Raw Data/moves/compiled.txt",
     'compiled_cnn'      : os.getcwd() + "/../../data/Raw Data/compiled_cnn.txt",
     'compiled_hapt'     : os.getcwd() + "/../../data/HAPT Dataset/RawData/compiled_hapt.txt",
     'model_save'        : os.getcwd() + "/models/" + model_name,
