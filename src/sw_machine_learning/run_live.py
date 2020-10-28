@@ -59,16 +59,16 @@ def process_data():
     RDS_PASSWORD = "password"
     RDS_DATABASE = "justdance"
     RDS_PORT = 3306
-    date = ""
-    dance_move = ""
-    left_time = ""
-    left_dancer = ""
-    center_time = ""
-    center_dancer = ""
-    right_time = ""
-    right_dancer = ""
-    diff_in_timing = ""
-    sync = ""
+    date = "0"
+    dance_move = "0"
+    left_time = "0"
+    left_dancer = "0"
+    center_time = "0"
+    center_dancer = "0"
+    right_time = "0"
+    right_dancer = "0"
+    diff_in_timing = "0"
+    sync = "0"
 
     connection = psycopg2.connect(user = RDS_USERNAME,
                                 password = RDS_PASSWORD,
@@ -101,7 +101,7 @@ def process_data():
                 if len(move_frame) == 60:
                     df = torch.from_numpy(np.array(MinMaxScaler().fit_transform([move_frame]))).float()
                     out = eval_model(model, df)[0]
-                    insertDanceDataQuery = "INSERT INTO dancedata VALUES (" + "'" + date + "'," +"'"+ dance_move +"'"+ "," +"'"+left_time +"'"+ "," + left_dancer + "," +"'"+ center_time +"'"+ "," + center_dancer + "," +"'"+ right_time +"'"+ "," + right_dancer + "," + diff_in_timing + "," + "'" + sync + "')"
+                    insertDanceDataQuery = "INSERT INTO dancedata VALUES (" + "'" + date + "'," +"'"+ ACTIONS[out] +"'"+ "," +"'"+left_time +"'"+ "," + left_dancer + "," +"'"+ center_time +"'"+ "," + center_dancer + "," +"'"+ right_time +"'"+ "," + right_dancer + "," + diff_in_timing + "," + "'" + sync + "')"
                     cursor.execute(insertDanceDataQuery)
                     #connect(datetime.now().strftime("%d-%m-%y"), ACTIONS[out], 0, 0, 0, 0, 0, 0, 0, 0)
                     print("Predicted Dance Move: " + ACTIONS[out])
@@ -113,6 +113,7 @@ def process_data():
                 pos_frame = pos_frame + pos_data.split("/")
                 if len(pos_data) == 30:
                     pos_out = np.round(np.clip(rf.predict(np.array(pos_frame)), 0, 1)).astype(bool)[0]
+                    pos_frame.clear()
                     if POS_TIMEOUT == 0:
                         if pos_out:
                             print("Movement RIGHT")
