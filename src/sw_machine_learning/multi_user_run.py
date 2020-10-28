@@ -47,7 +47,7 @@ class MultiUser():
 
 
     def load_model(self, PATH):
-        model = ffnn()
+        model = mlp()
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         model.load_state_dict(torch.load(PATH + "mlp_1510_0451.pt", map_location=device))
         print("Model Loaded")
@@ -67,8 +67,8 @@ class MultiUser():
         move_frame = []
         pos_frame = []
         while 1:
-            move_data = '/'.join(server.raw.split("/")[1:7])
-            pos_data = '/'.join(server.raw.split("/")[7:13])
+            move_data = '/'.join(server.raw_data.split("/")[1:7])
+            pos_data = '/'.join(server.raw_data.split("/")[7:13])
             if prev_msg != move_data:
                 if TIMEOUT > 0:
                     TIMEOUT = TIMEOUT - 1
@@ -102,16 +102,17 @@ class MultiUser():
                     if len(pos_data) == 30:
                         self.lock_rf.acquire()
                         try:
-                            pos_out = self.rf.predict(np.array(pos_frame))
+                            pos_out = np.round(np.clip(self.rf.predict(np.array(pos_frame)), 0, 1)).astype(bool)[0]
                             if TIMEOUT == 0:
-                                if pos_out == 0:
-                                    print("Movement LEFT")
-                                    if server.pos != 1:
-                                        server.pos =  server.pos - 1
-                                else:
+                                if pos_out:
                                     print("Movement RIGHT")
                                     if server.pos != 3:
                                         server.pos = server.pos + 1
+                                else:
+                                    print("Movement LEFT")
+                                    if server.pos != 1:
+                                        server.pos =  server.pos - 1
+                            pos_frame.clear()
                             self.q_pkt[server.id] = (-1, server.pos) 
                             queue.put()
                             TIMEOUT = 10

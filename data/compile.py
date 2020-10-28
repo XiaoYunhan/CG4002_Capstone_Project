@@ -3,7 +3,7 @@ import os
 
 
 directory = 'Raw Data/moves/'
-labels_path = 'Raw Data/moves/labels.txt'
+labels_path = 'Raw Data/moves/user06_labels.txt'
 
 cols = []
 for i in range(61):
@@ -49,5 +49,5 @@ for index, row in labels.iterrows():
         df2 = df2.astype({60: int})
         df3 = df3.append(df2)
     
-df3.to_csv(directory + '/compiled.txt', header=None, index=None, sep=' ', mode='w')
+df3.to_csv(directory + '/compiled_u6.txt', header=None, index=None, sep=' ', mode='w')
         
