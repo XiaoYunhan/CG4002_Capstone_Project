@@ -133,7 +133,7 @@ def multi_user_run():
 
 #Db side wait for move detection output from 3 queues, if not all output, clear the queue
 
-def db_connect(queue):
+def db_connect(self, queue):
     RDS_HOSTNAME = "localhost"
     RDS_USERNAME = "b07admin"
     RDS_PASSWORD = "password"
