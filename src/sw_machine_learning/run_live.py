@@ -1,6 +1,7 @@
 import os
 
 import numpy as np
+import psycopg2
 from datetime import datetime
 from joblib import load
 
@@ -111,12 +112,12 @@ def process_data():
             else:
                 pos_frame = pos_frame + pos_data.split("/")
                 if len(pos_data) == 30:
-                    pos_out = rf.predict(np.array(pos_frame))
+                    pos_out = np.round(np.clip(rf.predict(np.array(pos_frame)), 0, 1)).astype(bool)[0]
                     if POS_TIMEOUT == 0:
-                        if pos_out == 0:
-                            print("Movement LEFT")
-                        else:
+                        if pos_out:
                             print("Movement RIGHT")
+                        else:
+                            print("Movement LEFT")
                         POS_TIMEOUT = 10
 
 
