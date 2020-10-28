@@ -4,7 +4,7 @@ from joblib import load
 from concurrent.futures import ThreadPoolExecutor
 
 import os
-
+import psycopg2
 import numpy as np
 from datetime import datetime
 

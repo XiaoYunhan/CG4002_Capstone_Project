@@ -1,6 +1,7 @@
 import os
 
 import numpy as np
+import psycopg2
 from datetime import datetime
 from joblib import load
 
