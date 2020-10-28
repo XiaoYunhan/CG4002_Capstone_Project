@@ -86,10 +86,9 @@ class Server(threading.Thread):
                     msg = data.decode("utf8")
                     decrypted_message = self.decrypt_message(msg)
                     self.has_no_response = False
-                    # print(decrypted_message) 
                     self.raw_data = decrypted_message.split("|")[0]
-                    self.RTT = decrypted_message.split("|")[1]
-                    self.offset = decrypted_message.split("|")[2]
+                    self.RTT = float(decrypted_message.split("|")[1])
+                    self.offset = float(decrypted_message.split("|")[2])
                     print("port: " + str(self.port_num))
                     print("raw data: " + self.raw_data)
                     print("RTT(ms): " + self.RTT)
@@ -117,8 +116,6 @@ class Server(threading.Thread):
         print('waiting for a connection', file=sys.stderr)
         self.connection, client_address = self.socket.accept()
 
-        # print("Enter the secret key: ")
-        # secret_key = sys.stdin.readline().strip()
         secret_key = "passwordpassword"
 
         print('connection from', client_address, file=sys.stderr)
@@ -138,7 +135,7 @@ class Server(threading.Thread):
     def set_next_action(self):
         self.timer.cancel()
         if self.has_no_response:  # If no response was sent
-            print("ACTION TIMEOUT")
+            # print("ACTION TIMEOUT")
             self.send_timestamp() # send dancer positions even at timeout
 
         if self.idx < self.n_moves:
@@ -156,20 +153,30 @@ class Server(threading.Thread):
         self.timer.start()
 
 def main():
-    if len(sys.argv) != 3:
-        print('Invalid number of arguments')
-        print('python server.py [IP address] [groupID]')
-        sys.exit()
+    # if len(sys.argv) != 3:
+    #     print('Invalid number of arguments')
+    #     print('python server.py [IP address] [groupID]')
+    #     sys.exit()
 
     # ip_addr = sys.argv[1]
     # port_num = int(sys.argv[2])
     # group_id = sys.argv[3]
 
-    ip_addr = sys.argv[1]
-    port_num1 = 8081
-    port_num2 = 8082
-    port_num3 = 8083
-    group_id = sys.argv[2]
+    ip_addr = "127.0.0.1"
+    port_num1 = 8080
+    port_num2 = 8081
+    port_num3 = 8082
+    group_id = 7
+
+    STOP_PATTERN = "-1/-1/-1/-1/-1/-1/-1/-1/-1/-1/-1/-1"
+
+    sync_stop = False
+    sync_start = False
+    first_timestamp = time.time()
+    third_timestamp = time.time()
+    sync_delay = 0
+    first_index = 1
+    third_index = 1
 
     my_server1 = Server(ip_addr, port_num1, group_id)
     my_server2 = Server(ip_addr, port_num2, group_id)
@@ -177,6 +184,37 @@ def main():
     my_server1.start()
     my_server2.start()
     my_server3.start()
+    
+    while True:
+        if sync_stop == False and my_server1.raw_data == STOP_PATTERN and my_server2.raw_data == STOP_PATTERN and my_server3.raw_data == STOP_PATTERN:
+            sync_stop = True
+            print("!")
+        # if my_server1.raw_data != STOP_PATTERN and my_server2.raw_data != STOP_PATTERN and my_server3.raw_data != STOP_PATTERN:
+        #     sync_stop = False
+        check = [my_server1.raw_data == STOP_PATTERN, my_server2.raw_data == STOP_PATTERN, my_server3.raw_data == STOP_PATTERN]
+        if sync_stop == True and check.count(False) == 1:
+            first_index = check.index(False)
+            if first_index == 0:
+                first_timestamp = time.time() - my_server1.offset/1000
+            elif first_index == 1:
+                first_timestamp = time.time() - my_server2.offset/1000
+            else:
+                first_timestamp = time.time() - my_server3.offset/1000
+        if sync_stop == True and check.count(False) == 2:
+            third_index = check.index(True)
+        if sync_stop == True and check.count(False) == 3:
+            if third_index == 0:
+                third_timestamp = time.time() - my_server1.offset/1000
+            elif third_index == 1:
+                third_timestamp = time.time() - my_server2.offset/1000
+            else:
+                third_timestamp = time.time() - my_server3.offset/1000
+            sync_stop = False
+            sync_delay = third_timestamp - first_timestamp
+
+        # print(sync_delay)
+        time.sleep(0.1)
+        
 
 
 if __name__ == '__main__':

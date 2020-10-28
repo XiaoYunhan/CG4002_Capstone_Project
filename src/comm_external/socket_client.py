@@ -69,13 +69,14 @@ def main():
     
     count = 0
     raw_data = "raw_data"
+    sample_input = ["-1/-1/-1/-1/-1/-1/-1/-1/-1/-1/-1/-1", "1/2/3/4/5/6/7/8/9/10/11/12"]
 
     time.sleep(15)
 
     while True:
         t1 = time.time()
         # print("t1: " + str(t1))
-        my_client.execute(raw_data + "|" + str(1000*my_client.RTT) + "|" + str(1000*my_client.offset))
+        my_client.execute(sample_input[count//10] + "|" + str(1000*my_client.RTT) + "|" + str(1000*my_client.offset))
         timestamp = my_client.receive_timestamp()
         t4 = time.time()
         # print("total: " + str(1000*(t4-t1)))
@@ -89,10 +90,12 @@ def main():
         print("RTT(ms): " + str(1000*my_client.RTT))
         my_client.offset = (t2 - t1) - my_client.RTT/2
         print("offset(ms): " + str(1000*my_client.offset))
-        if(count == 10000) :
-            my_client.stop()
+        # if(count == 10000) :
+        #     my_client.stop()
         time.sleep(2)
         count += 1
+        if(count==20):
+            count = 0
 
 if __name__ == '__main__':
     main()

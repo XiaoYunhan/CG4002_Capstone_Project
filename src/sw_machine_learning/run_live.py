@@ -53,6 +53,33 @@ def process_data():
     POS_TIMEOUT = 0
     move_frame = []
     pos_frame = []
+    RDS_HOSTNAME = "localhost"
+    RDS_USERNAME = "b07admin"
+    RDS_PASSWORD = "password"
+    RDS_DATABASE = "justdance"
+    RDS_PORT = 3306
+    date = ""
+    dance_move = ""
+    left_time = ""
+    left_dancer = ""
+    center_time = ""
+    center_dancer = ""
+    right_time = ""
+    right_dancer = ""
+    diff_in_timing = ""
+    sync = ""
+
+    connection = psycopg2.connect(user = RDS_USERNAME,
+                                password = RDS_PASSWORD,
+                                host = RDS_HOSTNAME,
+                                port = RDS_PORT,
+                                database = RDS_DATABASE)
+    connection.autocommit = True
+    cursor = connection.cursor()
+    print ( connection.get_dsn_parameters(),"\n")
+    cursor.execute("SELECT version();")
+    record = cursor.fetchone()
+    print("You are connected to - ", record,"\n")
     while 1:
         move_data = '/'.join(server.raw_data.split("/")[1:7])
         pos_data = '/'.join(server.raw_data.split("/")[7:13])
@@ -73,6 +100,8 @@ def process_data():
                 if len(move_frame) == 60:
                     df = torch.from_numpy(np.array(MinMaxScaler().fit_transform([move_frame]))).float()
                     out = eval_model(model, df)[0]
+                    insertDanceDataQuery = "INSERT INTO dancedata VALUES (" + "'" + date + "'," +"'"+ dance_move +"'"+ "," +"'"+left_time +"'"+ "," + left_dancer + "," +"'"+ center_time +"'"+ "," + center_dancer + "," +"'"+ right_time +"'"+ "," + right_dancer + "," + diff_in_timing + "," + "'" + sync + "')"
+                    cursor.execute(insertDanceDataQuery)
                     #connect(datetime.now().strftime("%d-%m-%y"), ACTIONS[out], 0, 0, 0, 0, 0, 0, 0, 0)
                     print("Predicted Dance Move: " + ACTIONS[out])
                     del move_frame[0:12] 
