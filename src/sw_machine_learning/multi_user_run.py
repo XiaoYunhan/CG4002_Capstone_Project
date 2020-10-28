@@ -14,12 +14,12 @@ from sklearn.svm import SVC
 
 from sklearn.preprocessing import MinMaxScaler
 
-from src.models.mlp import *
+#from src.models.mlp import *
 from sklearn.ensemble import RandomForestRegressor
 from comm_external.multiple_server import *
 
 IP_ADDRESS = ["127.0.0.1", "127.0.0.1", "127.0.0.1"]
-PORT= [8080, 8081, 8082]
+PORT= [8081, 8082, 8083]
 GROUP= [7, 7, 7]
 
 IDLE_FRAME = "-1/-1/-1/-1/-1/-1"

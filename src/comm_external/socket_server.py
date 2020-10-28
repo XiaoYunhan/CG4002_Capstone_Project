@@ -24,7 +24,7 @@ class Server(threading.Thread):
     def __init__(self, ip_addr, port_num, group_id, n_moves=len(ACTIONS) * NUM_MOVE_PER_ACTION):
         super(Server, self).__init__()
 
-        self.id = port_num % 10 + 1
+        self.id = port_num % 10
         self.pos = self.id
         # setup moves
         self.actions = ACTIONS
