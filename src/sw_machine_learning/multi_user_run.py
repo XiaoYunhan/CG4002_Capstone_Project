@@ -8,8 +8,9 @@ import psycopg2
 import numpy as np
 from datetime import datetime
 
-import torch
-import torch.nn as nn
+#import torch
+#import torch.nn as nn
+from sklearn.svm import SVC
 
 from sklearn.preprocessing import MinMaxScaler
 
@@ -31,8 +32,9 @@ class Q_Pkt():
 
 class MultiUser():
     def __init__(self, queue):
-        self.model = load_model(os.getcwd() + "/models/")
-        self.model.eval()
+        #self.model = load_model(os.getcwd() + "/models/")
+        #self.model.eval()
+        self.model = load('models/rbf.joblib')
         self.rf = load('models/rf.joblib')
         self.lock_model = threading.Lock()
         self.lock_rf = threading.Lock()
@@ -46,19 +48,19 @@ class MultiUser():
         return my_server
 
 
-    def load_model(self, PATH):
-        model = mlp()
-        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        model.load_state_dict(torch.load(PATH + "mlp_1510_0451.pt", map_location=device))
-        print("Model Loaded")
-        return model
+    # def load_model(self, PATH):
+    #     model = mlp()
+    #     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    #     model.load_state_dict(torch.load(PATH + "mlp_1510_0451.pt", map_location=device))
+    #     print("Model Loaded")
+    #     return model
 
 
-    def eval_model(self, model, frame):
-            Y_test_pred = model(frame)
-            Y_pred_softmax = torch.log_softmax(Y_test_pred, dim = 1)
-            _, Y_pred_tags = torch.max(Y_pred_softmax, dim = 1)
-            return Y_pred_tags.cpu().numpy()
+    # def eval_model(self, model, frame):
+    #     Y_test_pred = model(frame)
+    #     Y_pred_softmax = torch.log_softmax(Y_test_pred, dim = 1)
+    #     _, Y_pred_tags = torch.max(Y_pred_softmax, dim = 1)
+    #     return Y_pred_tags.cpu().numpy()
 
     def process_data(self, server):  
         prev_msg = ""
@@ -82,10 +84,11 @@ class MultiUser():
                     idle_count = 0
                     move_frame = move_frame + move_data.split("/")
                     if len(move_frame) == 60:
-                        df = torch.from_numpy(np.array(MinMaxScaler().fit_transform([move_frame]))).float()
+                        #df = torch.from_numpy(np.array(MinMaxScaler().fit_transform([move_frame]))).float()
                         self.lock_model.acquire()
                         try:
-                            out = eval_model(self.model, df)[0]
+                            #out = eval_model(self.model, df)[0]
+                            out = self.model.predict([move_frame])[0]
                             #connect(datetime.now().strftime("%d-%m-%y"), ACTIONS[out], 0, 0, 0, 0, 0, 0, 0, 0)
                             print("Predicted Dance Move: " + ACTIONS[out])
                             self.q_pkt[server.id] = (out, server.pos) 
@@ -102,7 +105,7 @@ class MultiUser():
                     if len(pos_data) == 30:
                         self.lock_rf.acquire()
                         try:
-                            pos_out = np.round(np.clip(self.rf.predict(np.array(pos_frame)), 0, 1)).astype(bool)[0]
+                            pos_out = np.round(np.clip(self.rf.predict([pos_frame]), 0, 1)).astype(bool)[0]
                             if TIMEOUT == 0:
                                 if pos_out:
                                     print("Movement RIGHT")
