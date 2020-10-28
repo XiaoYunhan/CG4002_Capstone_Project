@@ -9,7 +9,7 @@ from .quantised_models.quant_msresnet import *
     
 _models = {
     'msresnet' : msresnet,
-    'ffnn' : ffnn,
+    'mlp' : mlp,
     'quant_mlp' : quant_mlp,
     'quant_msresnet' : quant_msresnet,
     'mobilenetv3_small_w7d20': mobilenetv3_small_w7d20,

@@ -2,8 +2,8 @@ import pandas as pd
 import os
 
 
-directory = 'Raw Data/'
-labels_path = 'Raw Data/labels.txt'
+directory = 'Raw Data/moves/'
+labels_path = 'Raw Data/moves/labels.txt'
 
 cols = []
 for i in range(61):
@@ -15,7 +15,8 @@ prev_exp = ''
 prev_usr = ''
 
 labels = pd.read_csv(labels_path, sep="\s+", header=None)
-for index, row in labels.iterrows():
+
+for index, row in labels.iterrows():    
     exp = row[0].astype('U')
     if len(exp) == 1:
         exp = '0'+ exp
@@ -47,7 +48,6 @@ for index, row in labels.iterrows():
         df2.at[0, 60] = int(row[2])
         df2 = df2.astype({60: int})
         df3 = df3.append(df2)
-    print (row[0], row[1])
     
 df3.to_csv(directory + '/compiled.txt', header=None, index=None, sep=' ', mode='w')
         

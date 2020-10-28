@@ -1,4 +1,5 @@
 from threading import Thread
+from queue import Queue
 from joblib import load
 from concurrent.futures import ThreadPoolExecutor
 
@@ -23,13 +24,20 @@ GROUP= [7, 7, 7]
 IDLE_FRAME = "-1/-1/-1/-1/-1/-1"
 IGNORE_FRAME = 10
 
-class MultiUser():
+class Q_Pkt():
     def __init__(self):
+        #move1 pos1 move2 pos2 move3 pos3
+        self.data = [(0,1),(0,2),(0,3)]
+
+class MultiUser():
+    def __init__(self, queue):
         self.model = load_model(os.getcwd() + "/models/")
         self.model.eval()
         self.rf = load('models/rf.joblib')
         self.lock_model = threading.Lock()
         self.lock_rf = threading.Lock()
+        self.queue = queue
+        self.q_pkt = Q_Pkt()
 
     def init_server(self, IP_ADDR, PRT, GRP):
         my_server = Server(IP_ADDR, PRT, GRP)
@@ -80,6 +88,9 @@ class MultiUser():
                             out = eval_model(self.model, df)[0]
                             #connect(datetime.now().strftime("%d-%m-%y"), ACTIONS[out], 0, 0, 0, 0, 0, 0, 0, 0)
                             print("Predicted Dance Move: " + ACTIONS[out])
+                            self.q_pkt[server.id] = (out, server.pos) 
+                            queue.put()
+                            self.q_pkt[server.id] = (-1, server.pos)
                         finally:
                             self.lock_model.release()
                         del move_frame[0:12]
@@ -95,8 +106,14 @@ class MultiUser():
                             if TIMEOUT == 0:
                                 if pos_out == 0:
                                     print("Movement LEFT")
+                                    if server.pos != 1:
+                                        server.pos =  server.pos - 1
                                 else:
                                     print("Movement RIGHT")
+                                    if server.pos != 3:
+                                        server.pos = server.pos + 1
+                            self.q_pkt[server.id] = (-1, server.pos) 
+                            queue.put()
                             TIMEOUT = 10
                         finally:
                             self.lock_rf.release()                          
@@ -104,7 +121,7 @@ class MultiUser():
 
 
 
-if __name__ == "__main__":
+def multi_user_run():
     s_list = []
     mu = MultiUser()
     for i in range(3):
@@ -112,3 +129,54 @@ if __name__ == "__main__":
 
     with ThreadPoolExecutor(max_workers=3) as executor:
         executor.map(mu.process_data, s_list)
+
+#Db side wait for move detection output from 3 queues, if not all output, clear the queue
+
+def db_connect(queue):
+    RDS_HOSTNAME = "localhost"
+    RDS_USERNAME = "b07admin"
+    RDS_PASSWORD = "password"
+    RDS_DATABASE = "justdance"
+    RDS_PORT = 3306
+    flag = False
+    date = "2020-10-27"
+    dance_move = "0"
+    left_time = "21:03:30.204"
+    left_dancer = "0"
+    center_time = "21:03:45.304"
+    center_dancer = "0"
+    right_time = "21:03:45.304"
+    right_dancer = "0"
+    diff_in_timing = "0"
+    sync = "Yes"
+
+    connection = psycopg2.connect(user = RDS_USERNAME,
+                                password = RDS_PASSWORD,
+                                host = RDS_HOSTNAME,
+                                port = RDS_PORT,
+                                database = RDS_DATABASE)
+    connection.autocommit = True
+    cursor = connection.cursor()
+    print ( connection.get_dsn_parameters(),"\n")
+    cursor.execute("SELECT version();")
+    record = cursor.fetchone()
+    print("You are connected to - ", record,"\n")
+
+    while not queue.empty():
+        cmd = queue.get()
+        for i in range(3):
+            if cmd[i][0] != -1:
+                insertDanceDataQuery = "INSERT INTO dancedata VALUES (" + "'" + date + "'," +"'"+ ACTIONS[cmd[i][0]] +"'"+ "," +"'"+left_time +"'"+ "," + str(cmd[0][1]) + "," +"'"+ center_time +"'"+ "," + str(cmd[1][1]) + "," +"'"+ right_time +"'"+ "," + str(cmd[2][1]) + "," + diff_in_timing + "," + "'" + sync + "')"
+                flag = True
+                break
+        if not flag:
+            insertDanceDataQuery = "INSERT INTO dancedata VALUES (" + "'" + date + "'," +"'"+ str(cmd[0][0]) +"'"+ "," +"'"+left_time +"'"+ "," + str(cmd[0][1]) + "," +"'"+ center_time +"'"+ "," + str(cmd[0][1]) + "," +"'"+ center_time +"'"+ "," + str(cmd[1][1]) + "," +"'"+ right_time +"'"+ "," + str(cmd[2][1]) + "," + diff_in_timing + "," + "'" + sync + "')"
+            flag = False
+        cursor.execute(insertDanceDataQuery)
+
+if __name__ == "__main__":
+    queue = Queue()
+    thread1 = Thread(target=multi_user_run, args=("MU-Thread", queue) )
+    thread2 = Thread(target=db_connect, args=("DB-Thread", queue) )
+    thread1.start()
+    thread2.start()
