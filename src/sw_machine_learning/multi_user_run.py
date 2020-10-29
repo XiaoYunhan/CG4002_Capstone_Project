@@ -65,15 +65,18 @@ class MultiUser():
     def process_data(self, server):  
         prev_msg = ""
         idle_count = 0
-        TIMEOUT = 0
+        MOVE_TIMEOUT = 0
+        POS_TIMEOUT = 0
         move_frame = []
         pos_frame = []
         while 1:
             move_data = '/'.join(server.raw_data.split("/")[1:7])
             pos_data = '/'.join(server.raw_data.split("/")[7:13])
             if prev_msg != move_data:
-                if TIMEOUT > 0:
-                    TIMEOUT = TIMEOUT - 1
+                if MOVE_TIMEOUT > 0:
+                    MOVE_TIMEOUT = MOVE_TIMEOUT - 1
+                if POS_TIMEOUT > 0:
+                    POS_TIMEOUT = POS_TIMEOUT - 1
                 if move_data == IDLE_FRAME:
                     idle_count = idle_count + 1
                     if idle_count >= IGNORE_FRAME:
@@ -85,47 +88,46 @@ class MultiUser():
                     move_frame = move_frame + move_data.split("/")
                     if len(move_frame) == 60:
                         #df = torch.from_numpy(np.array(MinMaxScaler().fit_transform([move_frame]))).float()
-                        self.lock_model.acquire()
-                        try:
-                            #out = eval_model(self.model, df)[0]
-                            out = self.model.predict([move_frame])[0]
-                            #connect(datetime.now().strftime("%d-%m-%y"), ACTIONS[out], 0, 0, 0, 0, 0, 0, 0, 0)
-                            print("Predicted Dance Move: " + ACTIONS[out])
-                            self.q_pkt[server.id - 1] = (out, server.pos) 
-                            self.queue.put()
-                            self.q_pkt[server.id -1] = (-1, server.pos)
-                        finally:
-                            self.lock_model.release()
+                        #self.lock_model.acquire()
+                        #try:
+                        #out = eval_model(self.model, df)[0]
+                        out = self.model.predict([move_frame])[0]
+                        #connect(datetime.now().strftime("%d-%m-%y"), ACTIONS[out], 0, 0, 0, 0, 0, 0, 0, 0)
+                        print("Predicted Dance Move: " + ACTIONS[out])
+                        self.q_pkt[server.id - 1] = (out, server.pos) 
+                        self.queue.put()
+                        self.q_pkt[server.id -1] = (-1, server.pos)
+                        #finally:
+                            #self.lock_model.release()
                         del move_frame[0:12]
                 
-                if pos_data == IDLE_FRAME:
+                if pos_data == IDLE_FRAME or POS_TIMEOUT > 0:
                     pos_frame.clear()
                 else:
                     pos_frame = pos_frame + pos_data.split("/")
                     if len(pos_data) == 30:
-                        self.lock_rf.acquire()
-                        try:
-                            pos_out = np.round(np.clip(self.rf.predict([pos_frame]), 0, 1)).astype(bool)[0]
-                            if TIMEOUT == 0:
-                                if pos_out:
-                                    print("Movement RIGHT")
-                                    if server.pos != 3:
-                                        server.pos = server.pos + 1
-                                else:
-                                    print("Movement LEFT")
-                                    if server.pos != 1:
-                                        server.pos =  server.pos - 1
-                            pos_frame.clear()
-                            self.q_pkt[server.id - 1] = (-1, server.pos) 
-                            self.queue.put()
-                            TIMEOUT = 10
-                        finally:
-                            self.lock_rf.release()                          
+                        #self.lock_rf.acquire()
+                        #try:
+                        pos_out = np.round(np.clip(self.rf.predict([pos_frame]), 0, 1)).astype(bool)[0]
+                        if pos_out:
+                            print("Movement RIGHT")
+                            if server.pos != 3:
+                                server.pos = server.pos + 1
+                        else:
+                            print("Movement LEFT")
+                            if server.pos != 1:
+                                server.pos =  server.pos - 1
+                        pos_frame.clear()
+                        self.q_pkt[server.id - 1] = (-1, server.pos) 
+                        self.queue.put()
+                        POS_TIMEOUT = 10
+                        #finally:
+                            #self.lock_rf.release()                          
                             
 
 
 
-def multi_user_run(self, queue):
+def multi_user_run(queue):
     s_list = []
     mu = MultiUser(queue)
     for i in range(3):
@@ -180,7 +182,8 @@ def db_connect(self, queue):
 
 if __name__ == "__main__":
     queue = Queue()
-    thread1 = Thread(target=multi_user_run, args=("MU-Thread", queue) )
-    thread2 = Thread(target=db_connect, args=("DB-Thread", queue) )
-    thread1.start()
-    thread2.start()
+    multi_user_run(queue)
+    # thread1 = Thread(target=multi_user_run, args=("MU-Thread", queue) )
+    # thread2 = Thread(target=db_connect, args=("DB-Thread", queue) )
+    # thread1.start()
+    # thread2.start()
