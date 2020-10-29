@@ -76,56 +76,34 @@ def set_connection(addr, index):
         print("Connection setup with beetle #" + str(index) + " !")
     except:
         print("Failed to connect to beetle #" + str(index) + ".")
-        #set_connection(addr, index)
+        #re_connect(addr, index)
 
     #init_handshake(serviceChar)
     
     while handshakeDone[index] == 0:
         init_handshake(serviceChar)
         if (beetle.waitForNotifications(1.0)):
-            #called handleNotification() here
+            #call handleNotification() here
             break
         else:
             continue
 
-    #while (sum(handshakeDone) != len(handshakeDone)):
-        #time.sleep(3)
-
-    while True:
-        try:
-            if(beetle.waitForNotifications(1)):
-                startTime = 0.0
-            else:
-                currTime = time.time()
-                if currTime - startTime >= 1000:
-                    #beetle.disconnect()
-                    re_connect(beetle, index)
-                else:
-                    pass
-            continue
-        except:
-               print("Beetle #" + str(index) + " disconnected")
-               #beetle.disconnect()
-               set_connection(beetle, index)
-               #break
-    
     while(True):
         if beetle.waitForNotifications(1000):
             #print(receive)
-            return getStr()
+            #getStr()
             continue
 
 def re_connect(beetle, index):
-    set_connection(addr, index)
-    #while True:
-        #try:
-            #print("Re-connecting to beetle #" + str(index) + " now...")
-            #set_connection(addr, index)
-            #print("Re-connection setup with beetle #" + str(index))
-            #break
-        #except:
-            #print("Failed to re-connect with beetle #" + str(index))
-            #continue
+    while True:
+        try:
+            print("Re-connecting to beetle #" + str(index) + " now...")
+            set_connection(addr, index)
+            print("Re-connection setup with beetle #" + str(index))
+            break
+        except:
+            print("Failed to re-connect with beetle #" + str(index))
+            continue
 
 class note_delegate(btle.DefaultDelegate):
     def __init__(self, index):
@@ -135,7 +113,7 @@ class note_delegate(btle.DefaultDelegate):
         self.message = ""
     
     def handleNotification(self, cHandle, data):
-        global receive
+        #global receive
         receive = data.decode("utf-8")
         if receive == "ACK":
             if handshakeDone[self.index] == 0:
@@ -143,16 +121,14 @@ class note_delegate(btle.DefaultDelegate):
                 print("Beetle #" + str(self.index) + " received ACK!")
                 return
         elif handshakeDone[self.index] == 1:
-            #print(receive) # mark
-            #queue.put(receive)
+            #print(receive)
             self.processData(receive)
         else:
             return
 
-    def processData(self, rececive):
-        #print(receive)
+    def processData(self, receive):
         self.message += receive
-        if 'e' in receive:
+        if 'e' in self.message:
             global string
             string = self.message
             string = string.replace(' ', '')
@@ -164,12 +140,10 @@ class note_delegate(btle.DefaultDelegate):
                #print(string)
             
             print(string) 
-            #print(ascii(string))
-           # print("************************")
             queue.put(string)
 
-    def calChecksum(self, string, strLen):
-        pass
+    #def calChecksum(self, string, strLen):
+        #pass
         #index = 0
         #checkSum = 0
         #while index < strLen - 2:
@@ -182,8 +156,8 @@ class note_delegate(btle.DefaultDelegate):
             #print("Error message detected...")
             #return False
 
-    #def getStr():
-        #return string
+    def getStr():
+        return string
 
 def init_handshake(serviceChar):
     print("Sending H to beetle...")
@@ -204,7 +178,6 @@ if __name__ == '__main__':
         count = 0
         raw_data = "raw_data"
 
-    	#time.sleep(15)
         while True:
             raw_data = queue.get()
             t1 = time.time()
@@ -219,15 +192,7 @@ if __name__ == '__main__':
             print("offset(ms): " + str(1000*my_client.offset))
             if(count == 10000) :
                 my_client.stop()
-            #time.sleep(2)
             count += 1
-
-        #while True:
-
-            #print("Test: " + receive)
-            #time.sleep(1)
-           # a = queue.get()
-            #print("received: " + a)
 
     thread1 = Thread(target = thread_internal, args = ("Thread-1", queue))
     thread2 = Thread(target = thread_external, args = ("Thread-2", queue))
