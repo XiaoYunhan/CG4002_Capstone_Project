@@ -19,7 +19,7 @@ from sklearn.ensemble import RandomForestRegressor
 from comm_external.multiple_server import *
 
 IP_ADDRESS = ["127.0.0.1", "127.0.0.1", "127.0.0.1"]
-PORT= [8081, 8082, 8083]
+PORT= [8084, 8085, 8086]
 GROUP= [7, 7, 7]
 
 IDLE_FRAME = "-1/-1/-1/-1/-1/-1"
@@ -88,17 +88,17 @@ class MultiUser():
                     move_frame = move_frame + move_data.split("/")
                     if len(move_frame) == 60:
                         #df = torch.from_numpy(np.array(MinMaxScaler().fit_transform([move_frame]))).float()
-                        #self.lock_model.acquire()
-                        #try:
+                        self.lock_model.acquire()
+                        try:
                         #out = eval_model(self.model, df)[0]
-                        out = self.model.predict([move_frame])[0]
-                        #connect(datetime.now().strftime("%d-%m-%y"), ACTIONS[out], 0, 0, 0, 0, 0, 0, 0, 0)
-                        print("Predicted Dance Move: " + ACTIONS[out])
-                        self.q_pkt[server.id - 1] = (out, server.pos) 
-                        self.queue.put()
-                        self.q_pkt[server.id -1] = (-1, server.pos)
-                        #finally:
-                            #self.lock_model.release()
+                            out = self.model.predict([move_frame])[0]
+                            #connect(datetime.now().strftime("%d-%m-%y"), ACTIONS[out], 0, 0, 0, 0, 0, 0, 0, 0)
+                            print("Predicted Dance Move: " + ACTIONS[out], flush=True)
+                            self.q_pkt[server.id - 1] = (out, server.pos) 
+                            self.queue.put()
+                            self.q_pkt[server.id -1] = (-1, server.pos)
+                        finally:
+                            self.lock_model.release()
                         del move_frame[0:12]
                 
                 if pos_data == IDLE_FRAME or POS_TIMEOUT > 0:
@@ -106,23 +106,23 @@ class MultiUser():
                 else:
                     pos_frame = pos_frame + pos_data.split("/")
                     if len(pos_data) == 30:
-                        #self.lock_rf.acquire()
-                        #try:
-                        pos_out = np.round(np.clip(self.rf.predict([pos_frame]), 0, 1)).astype(bool)[0]
-                        if pos_out:
-                            print("Movement RIGHT")
-                            if server.pos != 3:
-                                server.pos = server.pos + 1
-                        else:
-                            print("Movement LEFT")
-                            if server.pos != 1:
-                                server.pos =  server.pos - 1
-                        pos_frame.clear()
-                        self.q_pkt[server.id - 1] = (-1, server.pos) 
-                        self.queue.put()
-                        POS_TIMEOUT = 10
-                        #finally:
-                            #self.lock_rf.release()                          
+                        self.lock_rf.acquire()
+                        try:
+                            pos_out = np.round(np.clip(self.rf.predict([pos_frame]), 0, 1)).astype(bool)[0]
+                            if pos_out:
+                                print("Movement RIGHT", flush=True)
+                                if server.pos != 3:
+                                    server.pos = server.pos + 1
+                            else:
+                                print("Movement LEFT", flush=True)
+                                if server.pos != 1:
+                                    server.pos =  server.pos - 1
+                            pos_frame.clear()
+                            self.q_pkt[server.id - 1] = (-1, server.pos) 
+                            self.queue.put()
+                            POS_TIMEOUT = 10
+                        finally:
+                            self.lock_rf.release()                          
                             
 
 
