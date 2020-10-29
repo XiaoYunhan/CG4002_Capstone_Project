@@ -23,7 +23,8 @@ MESSAGE_SIZE = 3 # position, 1 action, sync
 class Server(threading.Thread):
     def __init__(self, ip_addr, port_num, group_id, n_moves=len(ACTIONS) * NUM_MOVE_PER_ACTION):
         super(Server, self).__init__()
-
+        self.id = port_num % 10
+        self.pos = self.id
         # setup moves
         self.ip_addr = ip_addr
         self.port_num = port_num
@@ -92,8 +93,8 @@ class Server(threading.Thread):
                     self.offset = decrypted_message.split("|")[2]
                     print("port: " + str(self.port_num))
                     print("raw data: " + self.raw_data)
-                    print("RTT(ms): " + self.RTT)
-                    print("offset(ms): " + self.offset)
+                    #print("RTT(ms): " + self.RTT)
+                    #print("offset(ms): " + self.offset)
                     self.send_timestamp() # sendd_timestamp
                     self.set_next_action()  # Get new action
                 except Exception as e:

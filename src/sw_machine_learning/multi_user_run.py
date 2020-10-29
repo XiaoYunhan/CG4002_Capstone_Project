@@ -3,7 +3,7 @@ from queue import Queue
 from joblib import load
 from concurrent.futures import ThreadPoolExecutor
 
-import os
+import os, time
 import psycopg2
 import numpy as np
 from datetime import datetime
@@ -125,12 +125,12 @@ class MultiUser():
 
 
 
-def multi_user_run():
+def multi_user_run(self, queue):
     s_list = []
-    mu = MultiUser()
+    mu = MultiUser(queue)
     for i in range(3):
         s_list.append(mu.init_server(IP_ADDRESS[i], PORT[i], GROUP[i]))
-
+        #time.sleep(3)
     with ThreadPoolExecutor(max_workers=3) as executor:
         executor.map(mu.process_data, s_list)
 
