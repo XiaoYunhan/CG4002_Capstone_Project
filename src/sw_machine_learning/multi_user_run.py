@@ -91,9 +91,9 @@ class MultiUser():
                             out = self.model.predict([move_frame])[0]
                             #connect(datetime.now().strftime("%d-%m-%y"), ACTIONS[out], 0, 0, 0, 0, 0, 0, 0, 0)
                             print("Predicted Dance Move: " + ACTIONS[out])
-                            self.q_pkt[server.id] = (out, server.pos) 
-                            queue.put()
-                            self.q_pkt[server.id] = (-1, server.pos)
+                            self.q_pkt[server.id - 1] = (out, server.pos) 
+                            self.queue.put()
+                            self.q_pkt[server.id -1] = (-1, server.pos)
                         finally:
                             self.lock_model.release()
                         del move_frame[0:12]
@@ -116,8 +116,8 @@ class MultiUser():
                                     if server.pos != 1:
                                         server.pos =  server.pos - 1
                             pos_frame.clear()
-                            self.q_pkt[server.id] = (-1, server.pos) 
-                            queue.put()
+                            self.q_pkt[server.id - 1] = (-1, server.pos) 
+                            self.queue.put()
                             TIMEOUT = 10
                         finally:
                             self.lock_rf.release()                          
