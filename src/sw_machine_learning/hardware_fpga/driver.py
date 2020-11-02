@@ -1,4 +1,3 @@
-
 import argparse
 import os
 from pynq import Overlay
@@ -60,7 +59,10 @@ class FINNAccelDriver():
         Gets input data (ibuf_normal), checks if data is in expected normal shape.
         Returns folded input."""
         # ensure that shape is as expected
-        assert ibuf_normal.shape == self.ishape_normal
+        try:
+            assert ibuf_normal.shape == self.ishape_normal
+        except:
+            print("Expected shape", self.ishape_normal, "but got", ibuf_normal.shape, "instead")
         # convert to folded form
         ibuf_folded = ibuf_normal.reshape(self.ishape_folded)
         return ibuf_folded
