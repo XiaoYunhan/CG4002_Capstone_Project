@@ -12,9 +12,7 @@ class MyFinnDriver():
         
     def execute(self, input_data):
         #load data as input to model
-        print(input_data.shape)
         ibuf_normal = input_data
-        print(ibuf_normal.shape)
         ibuf_folded = self.driver.fold_input(ibuf_normal)
         ibuf_packed = self.driver.fold_input(ibuf_folded)
         self.driver.copy_input_data_to_device(ibuf_packed)
