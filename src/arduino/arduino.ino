@@ -8,6 +8,7 @@ int handshakeDone = 0;
 float rawData[12];
 char rawDataStr[12] = "";
 char dataPacket[20] = "";
+float rotA[3] = {0};
 
 float rotXWArray[11] = {0.0};
 float rotYWArray[11] = {0.0};
@@ -50,7 +51,7 @@ void loop() {
   recordGyroRegistersA();
   updateDance();
   updatePosition();
-  delay(100);
+  delay(200);
 }
 
 //Establish communication with MPU and set up needed registers to read data from
@@ -206,21 +207,27 @@ void updateDance() {
 
   counterDance++;
   Serial.print(counterDance);
-  Serial.print(" ");
-
+  Serial.print("/");
+ 
   if (sqrtDifferenceW < 10) {
       Serial.print("-1/-1/-1/-1/-1/-1/");
     }
   else {
+    float temp1  = rotXA;
+    float temp2 = rotYA;
+    float temp3 = rotZA;
     processDanceData();
     //printDance();
+    rotXA = temp1;
+    rotYA = temp2;
+    rotZA = temp3;
   }
 }
 
 void updatePosition() {
   float meanXA=0, meanYA=0, meanZA=0, sumXA=0, sumYA=0, sumZA=0, differenceXA=0, differenceYA=0, differenceZA=0, totalDifferenceA=0, sqrtDifferenceA=0;
   positionIndex = counterPosition % 10; //0-9 repeatedly
-
+  
   //sum values in array
   for (int i=0; i<10; i++) {
     sumXA += rotXAArray[i];
@@ -230,7 +237,7 @@ void updatePosition() {
   meanXA = sumXA / 10.0;
   meanYA = sumYA / 10.0;
   meanZA = sumZA / 10.0;
-
+  
   //save new value into index 10
   rotXAArray[10] = rotXA;
   rotYAArray[10] = rotYA;
@@ -246,8 +253,8 @@ void updatePosition() {
   //save value in counter index
   rotXAArray[positionIndex] = rotXA;
   rotYAArray[positionIndex] = rotYA;
-  rotZAArray[positionIndex] = rotZA;  
-
+  rotZAArray[positionIndex] = rotZA;
+     
   if (sqrtDifferenceA < 10) {
       Serial.println("-1/-1/-1/-1/-1/-1/e");
     }
@@ -299,7 +306,6 @@ void processDanceData() {
   Serial.write(dataPacket);
   //Serial.println("");
 }
-
 
 void processPositionData() {
   memset(dataPacket, 0, sizeof(dataPacket));
