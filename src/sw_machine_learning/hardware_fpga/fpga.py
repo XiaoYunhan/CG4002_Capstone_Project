@@ -1,7 +1,7 @@
 from driver import FINNAccelDriver
 import numpy as np
 
-class MyFinnDriver():
+class FinnDriver():
     def __init__(self):
         #FINN Driver arguments
         N = 1
@@ -27,19 +27,15 @@ class MyFinnDriver():
         obuf_normal = self.driver.unfold_output(obuf_folded)
         return obuf_normal #output file
     
+    def predict(self, input): 
+        input =  (input - input.min(axis=0)) / (input.max(axis=0) - input.min(axis=0))
+        input = (255 * input).astype(np.uint8)
+        #print(input.shape)
+        
+        output = self.execute(input)
+        output = np.exp(output - np.max(output))
+        output = output / output.sum()
+        output = np.argmax(output)
+        
+        return output
     
-def fpga_execute(input): 
-    finnDriver = MyFinnDriver()
-    input =  (input - input.min(axis=0)) / (input.max(axis=0) - input.min(axis=0))
-    input = (255 * input).astype(np.uint8)
-    #print(input.shape)
-    
-    output = finnDriver.execute(input)
-    output = np.exp(output - np.max(output))
-    output = output / output.sum()
-    output = np.argmax(output)
-    
-    return output
-    
-if __name__ == "__main__":
-    print(fpga_execute)
