@@ -1,56 +1,0 @@
-
-fuse_model:¡
-»
-	global_in!StreamingDataflowPartition_0_out0StreamingDataflowPartition_0"StreamingDataflowPartition*K
-model"?/tmp/finn_dev_wkexin/dataflow_partition0_hfv36jza/df_model.onnx :finn
-Ó
-!StreamingDataflowPartition_0_out0!StreamingDataflowPartition_1_out0StreamingDataflowPartition_1"StreamingDataflowPartition*K
-model"?/tmp/finn_dev_wkexin/dataflow_partition2_2i_rc_i_/df_model.onnx :finn
-¼
-!StreamingDataflowPartition_1_out0
-global_outStreamingDataflowPartition_2"StreamingDataflowPartition*K
-model"?/tmp/finn_dev_wkexin/dataflow_partition1_s5wcmrco/df_model.onnx :finn
-fuse-graphZ
-	global_in
-
-
-<b
-
-global_out
-
-
-j
-
-global_out
-
-
-j3
-!StreamingDataflowPartition_1_out0
-
-
-j3
-!StreamingDataflowPartition_0_out0
-
-
-<rA
-
-global_out
-finn_datatypeINT24
-tensor_layout
-['N', 'C']r@
-	global_in
-tensor_layout
-['N', 'C']
-finn_datatypeUINT8r;
-!StreamingDataflowPartition_1_out0
-finn_datatypeINT24r;
-!StreamingDataflowPartition_0_out0
-finn_datatypeUINT8Br<
-pynq_driver_dir)/tmp/finn_dev_wkexin/pynq_driver_voy2o5l1rB
-vivado_pynq_proj./tmp/finn_dev_wkexin/vivado_zynq_proj_495dxs14rE
-bitfile:/tmp/finn_dev_wkexin/vivado_zynq_proj_495dxs14/resizer.bitrH
-
-hw_handoff:/tmp/finn_dev_wkexin/vivado_zynq_proj_495dxs14/resizer.hwhrS
-vivado_synth_rpt?/tmp/finn_dev_wkexin/vivado_zynq_proj_495dxs14/synth_report.xmlr
-platform
-zynq-iodma
