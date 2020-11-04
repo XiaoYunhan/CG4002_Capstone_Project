@@ -38,7 +38,7 @@ class QuantMLP(nn.Module):
         return x
 
 ## Initialise 3-Layer FFNN
-def quant_mlp(**kwargs):
-    model_ffnn = QuantMLP(num_feature=60, num_class=3)
+def quant_mlp_feat(**kwargs):
+    model_ffnn = QuantMLP(num_feature=64, num_class=3)
     model_ffnn.to("cpu")
     return model_ffnn
