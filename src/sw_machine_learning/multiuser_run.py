@@ -2,11 +2,11 @@ from threading import Thread
 from queue import Queue
 import argparse
 
-from .src.db_connect import db_connect
-from .src.multiuser import MultiUser, IP_ADDRESS, PORT, GROUP
+from src.db_connect import db_connect
+from src.multiuser import MultiUser
 
 IP_ADDRESS = ["127.0.0.1", "127.0.0.1", "127.0.0.1"]
-PORT= [8084, 8085, 8086]
+PORT= [8081, 8085, 8083]
 GROUP= [7, 7, 7]
 
 
@@ -30,7 +30,8 @@ if __name__ == "__main__":
     db_thread = Thread(name="DB-Thread", target=db_connect, args=(queue,) )
     db_thread.setDaemon(True)
     workers.append(db_thread)
-    for i in range(4):
+    for i in range(args.num_users + 1):
         workers[i].start()
-    for i in range(4):
+    for i in range(args.num_users + 1):
          workers[i].join()
+    #queue.join()

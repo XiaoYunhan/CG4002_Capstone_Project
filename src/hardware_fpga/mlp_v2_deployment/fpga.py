@@ -1,4 +1,4 @@
-from .driver import FINNAccelDriver
+from driver import FINNAccelDriver
 import numpy as np
 
 class FinnDriver():

@@ -1,0 +1,25 @@
+
+fuse_model:Õ
+†
+	global_in
+global_out"StreamingDataflowPartition*K
+model"?/tmp/finn_dev_wkexin/dataflow_partition0_6be653mi/df_model.onnx :finn
+fuse-graphZ
+	global_in
+
+
+<b
+
+global_out
+
+
+r@
+	global_in
+tensor_layout
+['N', 'C']
+finn_datatypeUINT8rA
+
+global_out
+finn_datatypeUINT8
+tensor_layout
+['N', 'C']B

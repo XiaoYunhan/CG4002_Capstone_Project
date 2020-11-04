@@ -8,30 +8,33 @@ int handshakeDone = 0;
 float rawData[12];
 char rawDataStr[12] = "";
 char dataPacket[20] = "";
+float rotA[3] = {0};
 
 float rotXWArray[11] = {0.0};
 float rotYWArray[11] = {0.0};
 float rotZWArray[11] = {0.0};
 
+float rotXAArray[11] = {0.0};
+float rotYAArray[11] = {0.0};
+float rotZAArray[11] = {0.0};
+
 //counter for serial printing
-int countIndex = 0;
-int counter = 0;
+int positionIndex = 0;
+int danceIndex = 0; 
+int counterDance = 0;
+int counterPosition = 0;
 
 //store raw data of accel and gyro
 long accelXW, accelYW, accelZW;  
 long gyroXW, gyroYW, gyroZW;
-
 long accelXA, accelYA, accelZA;  
 long gyroXA, gyroYA, gyroZA;
 
 //calculate accel and gyro in degree and g
 float gForceXW, gForceYW, gForceZW;
 float rotXW, rotYW, rotZW;
-
 float gForceXA, gForceYA, gForceZA;
 float rotXA, rotYA, rotZA;
-
-unsigned long currentMillis, previousMillis;
 
 void setup() {
   Serial.begin(115200);
@@ -46,8 +49,9 @@ void loop() {
   recordGyroRegistersW();
   recordAccelRegistersA(); //pre-processing
   recordGyroRegistersA();
-  updateGyro();
-  delay(100);
+  updateDance();
+  updatePosition();
+  delay(200);
 }
 
 //Establish communication with MPU and set up needed registers to read data from
@@ -108,11 +112,6 @@ void processAccelDataW() {
   gForceXW = accelXW / 16384.0;
   gForceYW = accelYW / 16384.0;
   gForceZW = accelZW / 16384.0;
-
-  //for comm use
-  rawData[3] = gForceXW;
-  rawData[4] = gForceYW;
-  rawData[5] = gForceZW; 
 }
 
 void recordAccelRegistersA() {
@@ -133,11 +132,6 @@ void processAccelDataA() {
   gForceXA = accelXA / 16384.0;
   gForceYA = accelYA / 16384.0;
   gForceZA = accelZA / 16384.0;
-
-  //for comm use
-  rawData[9] = gForceXA;
-  rawData[10] = gForceYA;
-  rawData[11] = gForceZA;   
 }
 
 void recordGyroRegistersW() {
@@ -158,11 +152,6 @@ void processGyroDataW() {
   rotXW = gyroXW / 131.0;
   rotYW = gyroYW / 131.0;
   rotZW = gyroZW / 131.0;
-
-  //for comm use
-  rawData[0] = rotXW;
-  rawData[1] = rotYW;
-  rawData[2] = rotZW;
 }
 
 void recordGyroRegistersA() {
@@ -183,87 +172,96 @@ void processGyroDataA() {
   rotXA = gyroXA / 131.0;
   rotYA = gyroYA / 131.0;
   rotZA = gyroZA / 131.0;
-
-  //for comm use
-  rawData[6] = rotXA;
-  rawData[7] = rotYA;
-  rawData[8] = rotZA; 
 }
 
-void updateGyro() {
-  float meanX=0, meanY=0, meanZ=0, sumX=0, sumY=0, sumZ=0, differenceX=0, differenceY=0, differenceZ=0, totalDifference=0, sqrtDifference=0;
-  countIndex = counter % 10; //0-9 repeatedly
+void updateDance() {
+  float meanXW=0, meanYW=0, meanZW=0, sumXW=0, sumYW=0, sumZW=0, differenceXW=0, differenceYW=0, differenceZW=0, totalDifferenceW=0, sqrtDifferenceW=0;
+  danceIndex = counterDance % 10; //0-9 repeatedly
 
   //sum values in array
   for (int i=0; i<10; i++) {
-    sumX += rotXWArray[i];
-    sumY += rotYWArray[i];
-    sumZ += rotZWArray[i];
+    sumXW += rotXWArray[i];
+    sumYW += rotYWArray[i];
+    sumZW += rotZWArray[i];
   }
-  meanX = sumX / 10.0;
-//  Serial.print(meanX); Serial.print(" ");
-  meanY = sumY / 10.0;
-  meanZ = sumZ / 10.0;
+  meanXW = sumXW / 10.0;
+  meanYW = sumYW / 10.0;
+  meanZW = sumZW / 10.0;
 
   //save new value into index 10
   rotXWArray[10] = rotXW;
   rotYWArray[10] = rotYW;
   rotZWArray[10] = rotZW;
   
-  differenceX = sq(meanX - rotXWArray[10]);
-//  Serial.print(differenceX); Serial.println(" ");
-  differenceY = sq(meanY - rotYWArray[10]);
-  differenceZ = sq(meanZ - rotZWArray[10]);
+  differenceXW = sq(meanXW - rotXWArray[10]);
+  differenceYW = sq(meanYW - rotYWArray[10]);
+  differenceZW = sq(meanZW - rotZWArray[10]);
 
-  totalDifference = differenceX + differenceY + differenceZ;
-  sqrtDifference = sqrt(totalDifference);
-
-//  Serial.println(sqrtDifference);
+  totalDifferenceW = differenceXW + differenceYW + differenceZW;
+  sqrtDifferenceW = sqrt(totalDifferenceW);
 
   //save value in counter index
-  rotXWArray[countIndex] = rotXW;
-  rotYWArray[countIndex] = rotYW;
-  rotZWArray[countIndex] = rotZW;  
-  
-  counter++;
-  if (counter > 5) {
-    Serial.print(counter-5); Serial.print("/");
-    if (sqrtDifference < 10) {
-      Serial.println("-1/-1/-1/-1/-1/-1/-1/-1/-1/-1/-1/-1/e");
+  rotXWArray[positionIndex] = rotXW;
+  rotYWArray[positionIndex] = rotYW;
+  rotZWArray[positionIndex] = rotZW;  
+
+  counterDance++;
+  Serial.print(counterDance);
+  Serial.print("/");
+ 
+  if (sqrtDifferenceW < 10) {
+      Serial.print("-1/-1/-1/-1/-1/-1/");
     }
-    else {
-      //printData();
-      processData();
-      delay(50);
-    }
+  else {
+    float temp1  = rotXA;
+    float temp2 = rotYA;
+    float temp3 = rotZA;
+    processDanceData();
+    //printDance();
+    rotXA = temp1;
+    rotYA = temp2;
+    rotZA = temp3;
   }
 }
 
-//Gyro x,y,z & Acc x,y,z
-void printData() {
-  Serial.print(rotXW, 4);
-  Serial.print(" ");
-  Serial.print(rotYW, 4);
-  Serial.print(" ");
-  Serial.print(rotZW, 4);
-  Serial.print(" ");
-  Serial.print(gForceXW, 4);
-  Serial.print(" ");
-  Serial.print(gForceYW, 4);
-  Serial.print(" ");
-  Serial.print(gForceZW, 4);
-  Serial.print(" ");
-  Serial.print(rotXA, 4);
-  Serial.print(" ");
-  Serial.print(rotYA, 4);
-  Serial.print(" ");
-  Serial.print(rotZA, 4);
-  Serial.print(" ");
-  Serial.print(gForceXA, 4);
-  Serial.print(" ");
-  Serial.print(gForceYA, 4);
-  Serial.print(" ");
-  Serial.println(gForceZA, 4);
+void updatePosition() {
+  float meanXA=0, meanYA=0, meanZA=0, sumXA=0, sumYA=0, sumZA=0, differenceXA=0, differenceYA=0, differenceZA=0, totalDifferenceA=0, sqrtDifferenceA=0;
+  positionIndex = counterPosition % 10; //0-9 repeatedly
+  
+  //sum values in array
+  for (int i=0; i<10; i++) {
+    sumXA += rotXAArray[i];
+    sumYA += rotYAArray[i];
+    sumZA += rotZAArray[i];
+  }
+  meanXA = sumXA / 10.0;
+  meanYA = sumYA / 10.0;
+  meanZA = sumZA / 10.0;
+  
+  //save new value into index 10
+  rotXAArray[10] = rotXA;
+  rotYAArray[10] = rotYA;
+  rotZAArray[10] = rotZA;
+  
+  differenceXA = sq(meanXA - rotXAArray[10]);
+  differenceYA = sq(meanYA - rotYAArray[10]);
+  differenceZA = sq(meanZA - rotZAArray[10]);
+
+  totalDifferenceA = differenceXA + differenceYA + differenceZA;
+  sqrtDifferenceA = sqrt(totalDifferenceA);
+
+  //save value in counter index
+  rotXAArray[positionIndex] = rotXA;
+  rotYAArray[positionIndex] = rotYA;
+  rotZAArray[positionIndex] = rotZA;
+     
+  if (sqrtDifferenceA < 10) {
+      Serial.println("-1/-1/-1/-1/-1/-1/e");
+    }
+  else {
+    processPositionData();
+    //printPosition();
+  }
 }
 
 void initHandshake() {
@@ -282,16 +280,7 @@ void initHandshake() {
   }
 }
 
-typedef struct {
-  float data1;
-  float data2;
-  float data3;
-  float data4;
-  float data5;
-  float data6;
-} DataPacketStrcut;
-
-void processData() {
+void processDanceData() {
   memset(dataPacket, 0, sizeof(dataPacket));
   memset(rawDataStr, 0, sizeof(rawDataStr));
   rawData[0] = rotXW;
@@ -300,14 +289,35 @@ void processData() {
   rawData[3] = gForceXW;
   rawData[4] = gForceYW;
   rawData[5] = gForceZW;
+    
+  for(int i = 0; i < 6; i++) {
+    char tempChar[7];
+    dtostrf(rawData[i], 7, 4, tempChar);
+    strcat(dataPacket, tempChar);
+    strcat(dataPacket, rawDataStr);
+    strcat(dataPacket,"/");
+  }
+  
+  char checksumByte[2] = "";
+  //checksumByte[0] = getChecksum(dataPacket);
+  strcat(dataPacket,checksumByte);
+  //strcat(dataPacket, "e");
+  
+  Serial.write(dataPacket);
+  //Serial.println("");
+}
+
+void processPositionData() {
+  memset(dataPacket, 0, sizeof(dataPacket));
+  memset(rawDataStr, 0, sizeof(rawDataStr));
   rawData[6] = rotXA;
   rawData[7] = rotYA;
   rawData[8] = rotZA;
   rawData[9] = gForceXA;
   rawData[10] = gForceYA;
   rawData[11] = gForceZA;
-  
-  for(int i = 0; i < 12; i++) {
+    
+  for(int i = 6; i < 12; i++) {
     char tempChar[7];
     dtostrf(rawData[i], 7, 4, tempChar);
     strcat(dataPacket, tempChar);
