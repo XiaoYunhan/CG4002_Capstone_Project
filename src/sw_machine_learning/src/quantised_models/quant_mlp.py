@@ -7,12 +7,12 @@ from brevitas.core.quant import QuantType
 class QuantMLP(nn.Module):
     def __init__(self, num_feature, num_class):
         super(QuantMLP, self).__init__()
-        self.layer_1 = qnn.QuantLinear(num_feature, 128, bias=False, weight_quant_type=QuantType.INT, weight_bit_width=4)
+        self.layer_1 = qnn.QuantLinear(num_feature, 128, bias=False, weight_quant_type=QuantType.INT, weight_bit_width=8)
         self.layer_2 = qnn.QuantLinear(128, 64, bias=False, weight_quant_type=QuantType.INT, weight_bit_width=4)
         self.layer_3 = qnn.QuantLinear(64, 32, bias=False, weight_quant_type=QuantType.INT, weight_bit_width=4)
         self.layer_out = qnn.QuantLinear(32, num_class, bias=False, weight_quant_type=QuantType.INT, weight_bit_width=4)
         
-        self.relu = qnn.QuantReLU(quant_type=QuantType.INT, bit_width=8, max_val=6)
+        self.relu = qnn.QuantReLU(quant_type=QuantType.INT, bit_width=4, max_val=6)
         self.dropout = nn.Dropout(p=0.2)
         self.batchnorm1 = nn.BatchNorm1d(128)
         self.batchnorm2 = nn.BatchNorm1d(64)

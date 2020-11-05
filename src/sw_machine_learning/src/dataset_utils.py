@@ -55,10 +55,10 @@ def split_dataset(X, Y):
 
 
     ## Normalise data to scale between 0 and 1
-    scaler = MinMaxScaler()
-    X_train = scaler.fit_transform(X_train)
-    X_val = scaler.transform(X_val)
-    X_test = scaler.transform(X_test)
+    #scaler = MinMaxScaler()
+    #X_train = scaler.fit_transform(X_train)
+    #X_val = scaler.transform(X_val)
+    #X_test = scaler.transform(X_test)
     X_train, Y_train = np.array(X_train), np.array(Y_train)
     X_val, Y_val = np.array(X_val), np.array(Y_val)
     X_test, Y_test = np.array(X_test), np.array(Y_test)

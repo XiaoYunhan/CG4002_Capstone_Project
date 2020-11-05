@@ -14,7 +14,7 @@ def load_trainval(train_dataset, val_dataset, test_dataset, weighted_sampler, BA
     train_loader = DataLoader(dataset=train_dataset,
                             batch_size=BATCH_SIZE,
                             sampler=weighted_sampler,
-                            num_workers=8
+                            num_workers=48
     )
     val_loader = DataLoader(dataset=val_dataset, batch_size=1)
     test_loader = DataLoader(dataset=test_dataset, batch_size=1)

@@ -44,7 +44,7 @@ def db_connect(queue):
     #logging.info(conn_msg)
 
     while True:
-        if not queue.empty():
+        try:
             cmd = queue.get()
             logging.info(cmd)
             if cmd == "Start":
@@ -68,5 +68,7 @@ def db_connect(queue):
             if to_commit:
                 cursor.execute(insertDanceDataQuery)
                 to_commit = False
+        except:
+            continue
 
     

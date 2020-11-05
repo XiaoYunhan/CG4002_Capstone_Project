@@ -1,8 +1,8 @@
 from threading import Thread, Lock
 from queue import Queue
 from joblib import load
+from time import sleep
 import logging
-#from string import rstrip
 
 from sklearn.svm import SVC
 
@@ -11,7 +11,7 @@ from sklearn.preprocessing import MinMaxScaler
 #from src.models.mlp import *
 from sklearn.ensemble import RandomForestRegressor
 from comm_external.multiple_server import *
-#from hardware_fpga.fpga import FinnDriver
+from hardware_fpga.fpga import FinnDriver
 
 IDLE_FRAME = "-1/-1/-1/-1/-1/-1"
 IGNORE_FRAME = 10
@@ -28,10 +28,9 @@ class MultiUser():
         logging.info("Multi User has been init")
         self.use_fpga = use_fpga
         if use_fpga:
-            #self.driver = FinnDriver()
-            pass
+            self.driver = FinnDriver()
         else:
-            self.model = load('models/rbf.joblib')
+            self.model = load('models/rbf0511.joblib')
         self.rf = load('models/rf.joblib')
         self.lock = Lock()
         self.queue = queue
@@ -114,22 +113,22 @@ class MultiUser():
                         try:
                         #out = eval_model(self.model, df)[0]
                             if self.use_fpga:
-                                pass
-                                #move_frame = np.array(move_frame, dtype="float32")
-                                #out = driver.predict(move_frame)
+                                move_frame = np.array(move_frame, dtype="float32")
+                                out = driver.predict(move_frame)
                             else:
                                 out = self.model.predict([move_frame])[0]
                             msg = str(server.id) + "-: Predicted Dance Move: " + ACTIONS[out]
                             logging.info(msg)
                             self.q_pkt[server.id - 1] = (out, server.pos)
-                            logging.info(self.q_pkt) 
-                            self.queue.put_nowait(self.q_pkt)
+                            logging.info(self.q_pkt)
+                            sleep(1e-12)
+                            self.queue.put(self.q_pkt)
                             self.q_pkt[server.id - 1] = (-1, server.pos)
                         finally:
                             self.lock.release()
                         #del move_frame[0:12]
                         move_frame.clear()
-                        #MOVE_TIMEOUT = 12
+                        MOVE_TIMEOUT = 12
                 
                 if pos_data == IDLE_FRAME or POS_TIMEOUT > 0:
                     pos_frame.clear()
@@ -153,6 +152,7 @@ class MultiUser():
                             self.q_pkt[server.id - 1] = (-1, server.pos) 
                             logging.info(self.q_pkt)
                             self.queue.put(self.q_pkt)
-                            #POS_TIMEOUT = 10
+                            sleep(1e-12)
+                            POS_TIMEOUT = 10
                         finally:
                             self.lock.release()        
