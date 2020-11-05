@@ -45,4 +45,5 @@ def connect(date, dance_move, left_time, left_dancer, center_time, center_dancer
 
 if __name__ == '__main__':
     connect("2020-10-27", "rocket", "21:03:30.204", "1", "21:03:45.304", "2", "21:02:30.998", "3" , "15.100", "No")
+    # connect("2020-10-27", "rocket", "NULL", "1", "NULL", "2", "NULL", "3" , "15.100", "No")
     # connect()
