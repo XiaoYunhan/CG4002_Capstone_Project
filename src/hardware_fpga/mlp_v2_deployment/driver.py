@@ -23,21 +23,12 @@ class FINNAccelDriver():
         # output FINN DataType
         self.odt = DataType.INT24
         # input and output shapes
-'''
         self.ishape_normal = (N, 60)
         self.oshape_normal = (N, 3)
         self.ishape_folded = (N, 1, 60)
         self.oshape_folded = (N, 1, 3)
         self.ishape_packed = (N, 1, 60)   # datatype np.uint8
         self.oshape_packed = (N, 1, 9)  # datatype np.uint8
-'''
-        self.ishape_normal = (N, 1)
-        self.oshape_normal = (N, 1)
-        self.ishape_folded = (N, 1, 1)
-        self.oshape_folded = (N, 1, 1)
-        self.ishape_packed = (N, 1, 1)   # datatype np.uint8
-        self.oshape_packed = (N, 1, 1)  # datatype np.uint8
-
         # load bitfile and set up accelerator
         self.ol = Overlay(bitfile)
         # neuron folding factor of output = iterations per sample
