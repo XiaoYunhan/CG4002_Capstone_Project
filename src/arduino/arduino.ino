@@ -255,7 +255,7 @@ void updatePosition() {
   rotYAArray[positionIndex] = rotYA;
   rotZAArray[positionIndex] = rotZA;
      
-  if (sqrtDifferenceA < 10) {
+  if (sqrtDifferenceA < 40) {
       Serial.println("-1/-1/-1/-1/-1/-1/e");
     }
   else {

@@ -18,7 +18,7 @@ from Crypto.Cipher import AES
 from Crypto import Random
 
 uuid = "0000dfb0-0000-1000-8000-00805f9b34fb"
-beetleAddr = ['2C:AB:33:CC:63:F1'] #'2C:AB:33:CC:65:D4',' F8:30:02:08:E9:59', '2C:AB:33:CC:63:F1', '2C:AB:33:CC:6C:85', '2C:AB:33:CC:6C:94']
+beetleAddr = ['2c:ab:33:cc:5f:57'] #'2C:AB:33:CC:65:D4',' F8:30:02:08:E9:59', '2C:AB:33:CC:63:F1', '2C:AB:33:CC:6C:85', '2C:AB:33:CC:6C:94']
 handshakeDone = [0, 0, 0, 0, 0, 0]
 global string
 receive = ""
@@ -173,7 +173,7 @@ if __name__ == '__main__':
                 index += 1
 
     def thread_external(threadname, queue):
-        my_client = Client("127.0.0.1", 8080, 7, "passwordpassword")
+        my_client = Client("127.0.0.1", 8082, 7, "passwordpassword")
         
         count = 0
         raw_data = "raw_data"

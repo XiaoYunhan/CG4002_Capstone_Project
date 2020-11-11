@@ -20,14 +20,14 @@ class FINNAccelDriver():
         # input FINN DataType
         self.idt = DataType.UINT8
         # output FINN DataType
-        self.odt = DataType.INT24
+        self.odt = DataType.INT16
         # input and output shapes
-        self.ishape_normal = (N, 60)
-        self.oshape_normal = (N, 3)
-        self.ishape_folded = (N, 1, 60)
-        self.oshape_folded = (N, 1, 3)
-        self.ishape_packed = (N, 1, 60)   # datatype np.uint8
-        self.oshape_packed = (N, 1, 9)  # datatype np.uint8
+        self.ishape_normal = (N, 72)
+        self.oshape_normal = (N, 8)
+        self.ishape_folded = (N, 1, 72)
+        self.oshape_folded = (N, 1, 8)
+        self.ishape_packed = (N, 1, 72)   # datatype np.uint8
+        self.oshape_packed = (N, 1, 16)  # datatype np.uint8
         # load bitfile and set up accelerator
         self.ol = Overlay(bitfile)
         # neuron folding factor of output = iterations per sample
@@ -125,7 +125,7 @@ class FINNAccelDriver():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Set exec mode, batchsize N, bitfile name, inputfile name and outputfile name')
     parser.add_argument('--exec_mode', help='Please select functional verification ("execute") or throughput test ("throughput_test")', default="execute")
-    parser.add_argument('--platform', help='Target platform: zynq-iodma alveo', default="zynq")
+    parser.add_argument('--platform', help='Target platform: zynq-iodma alveo', default="zynq-iodma")
     parser.add_argument('--batchsize', help='number of samples for inference', type=int, default=1)
     parser.add_argument('--bitfile', help='name of bitfile (i.e. "resizer.bit")', default="resizer.bit")
     parser.add_argument('--inputfile', help='name of input npy file (i.e. "input.npy")', default="input.npy")
