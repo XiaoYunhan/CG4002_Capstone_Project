@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Thu Nov  5 04:25:49 2020" VIVADOVERSION="2020.1">
+<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Wed Nov 11 03:57:39 2020" VIVADOVERSION="2020.1">
 
   <SYSTEMINFO ARCH="zynquplus" BOARD="em.avnet.com:ultra96v1:part0:1.2" DEVICE="xczu3eg" NAME="top" PACKAGE="sbva484" SPEEDGRADE="-1"/>
 
@@ -1112,7 +1112,7 @@
             <CONNECTION INSTANCE="smartconnect_0" PORT="S00_AXI_bvalid"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="m_axi_gmem0_rdata" RIGHT="0" SIGIS="undef" SIGNAME="idma0_m_axi_gmem0_rdata">
+        <PORT DIR="I" LEFT="63" NAME="m_axi_gmem0_rdata" RIGHT="0" SIGIS="undef" SIGNAME="idma0_m_axi_gmem0_rdata">
           <CONNECTIONS>
             <CONNECTION INSTANCE="smartconnect_0" PORT="S00_AXI_rdata"/>
           </CONNECTIONS>
@@ -1137,7 +1137,7 @@
             <CONNECTION INSTANCE="smartconnect_0" PORT="S00_AXI_rvalid"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="m_axi_gmem0_wdata" RIGHT="0" SIGIS="undef" SIGNAME="idma0_m_axi_gmem0_wdata">
+        <PORT DIR="O" LEFT="63" NAME="m_axi_gmem0_wdata" RIGHT="0" SIGIS="undef" SIGNAME="idma0_m_axi_gmem0_wdata">
           <CONNECTIONS>
             <CONNECTION INSTANCE="smartconnect_0" PORT="S00_AXI_wdata"/>
           </CONNECTIONS>
@@ -1152,7 +1152,7 @@
             <CONNECTION INSTANCE="smartconnect_0" PORT="S00_AXI_wready"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="3" NAME="m_axi_gmem0_wstrb" RIGHT="0" SIGIS="undef" SIGNAME="idma0_m_axi_gmem0_wstrb">
+        <PORT DIR="O" LEFT="7" NAME="m_axi_gmem0_wstrb" RIGHT="0" SIGIS="undef" SIGNAME="idma0_m_axi_gmem0_wstrb">
           <CONNECTIONS>
             <CONNECTION INSTANCE="smartconnect_0" PORT="S00_AXI_wstrb"/>
           </CONNECTIONS>
@@ -1316,8 +1316,8 @@
             <PORTMAP LOGICAL="RREADY" PHYSICAL="s_axi_control_rready"/>
           </PORTMAPS>
         </BUSINTERFACE>
-        <BUSINTERFACE BUSNAME="idma0_m_axi_gmem0" DATAWIDTH="32" NAME="m_axi_gmem0" TYPE="MASTER" VLNV="xilinx.com:interface:aximm:1.0">
-          <PARAMETER NAME="DATA_WIDTH" VALUE="32"/>
+        <BUSINTERFACE BUSNAME="idma0_m_axi_gmem0" DATAWIDTH="64" NAME="m_axi_gmem0" TYPE="MASTER" VLNV="xilinx.com:interface:aximm:1.0">
+          <PARAMETER NAME="DATA_WIDTH" VALUE="64"/>
           <PARAMETER NAME="PROTOCOL" VALUE="AXI4"/>
           <PARAMETER NAME="ID_WIDTH" VALUE="0"/>
           <PARAMETER NAME="ADDR_WIDTH" VALUE="64"/>
@@ -1552,7 +1552,7 @@
             <CONNECTION INSTANCE="smartconnect_0" PORT="S01_AXI_bvalid"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="m_axi_gmem0_rdata" RIGHT="0" SIGIS="undef" SIGNAME="odma0_m_axi_gmem0_rdata">
+        <PORT DIR="I" LEFT="63" NAME="m_axi_gmem0_rdata" RIGHT="0" SIGIS="undef" SIGNAME="odma0_m_axi_gmem0_rdata">
           <CONNECTIONS>
             <CONNECTION INSTANCE="smartconnect_0" PORT="S01_AXI_rdata"/>
           </CONNECTIONS>
@@ -1577,7 +1577,7 @@
             <CONNECTION INSTANCE="smartconnect_0" PORT="S01_AXI_rvalid"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="m_axi_gmem0_wdata" RIGHT="0" SIGIS="undef" SIGNAME="odma0_m_axi_gmem0_wdata">
+        <PORT DIR="O" LEFT="63" NAME="m_axi_gmem0_wdata" RIGHT="0" SIGIS="undef" SIGNAME="odma0_m_axi_gmem0_wdata">
           <CONNECTIONS>
             <CONNECTION INSTANCE="smartconnect_0" PORT="S01_AXI_wdata"/>
           </CONNECTIONS>
@@ -1592,7 +1592,7 @@
             <CONNECTION INSTANCE="smartconnect_0" PORT="S01_AXI_wready"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="3" NAME="m_axi_gmem0_wstrb" RIGHT="0" SIGIS="undef" SIGNAME="odma0_m_axi_gmem0_wstrb">
+        <PORT DIR="O" LEFT="7" NAME="m_axi_gmem0_wstrb" RIGHT="0" SIGIS="undef" SIGNAME="odma0_m_axi_gmem0_wstrb">
           <CONNECTIONS>
             <CONNECTION INSTANCE="smartconnect_0" PORT="S01_AXI_wstrb"/>
           </CONNECTIONS>
@@ -1756,8 +1756,8 @@
             <PORTMAP LOGICAL="RREADY" PHYSICAL="s_axi_control_rready"/>
           </PORTMAPS>
         </BUSINTERFACE>
-        <BUSINTERFACE BUSNAME="odma0_m_axi_gmem0" DATAWIDTH="32" NAME="m_axi_gmem0" TYPE="MASTER" VLNV="xilinx.com:interface:aximm:1.0">
-          <PARAMETER NAME="DATA_WIDTH" VALUE="32"/>
+        <BUSINTERFACE BUSNAME="odma0_m_axi_gmem0" DATAWIDTH="64" NAME="m_axi_gmem0" TYPE="MASTER" VLNV="xilinx.com:interface:aximm:1.0">
+          <PARAMETER NAME="DATA_WIDTH" VALUE="64"/>
           <PARAMETER NAME="PROTOCOL" VALUE="AXI4"/>
           <PARAMETER NAME="ID_WIDTH" VALUE="0"/>
           <PARAMETER NAME="ADDR_WIDTH" VALUE="64"/>
@@ -1983,12 +1983,12 @@
             <CONNECTION INSTANCE="idma0" PORT="m_axi_gmem0_awready"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="S00_AXI_wdata" RIGHT="0" SIGIS="undef" SIGNAME="idma0_m_axi_gmem0_wdata">
+        <PORT DIR="I" LEFT="63" NAME="S00_AXI_wdata" RIGHT="0" SIGIS="undef" SIGNAME="idma0_m_axi_gmem0_wdata">
           <CONNECTIONS>
             <CONNECTION INSTANCE="idma0" PORT="m_axi_gmem0_wdata"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="3" NAME="S00_AXI_wstrb" RIGHT="0" SIGIS="undef" SIGNAME="idma0_m_axi_gmem0_wstrb">
+        <PORT DIR="I" LEFT="7" NAME="S00_AXI_wstrb" RIGHT="0" SIGIS="undef" SIGNAME="idma0_m_axi_gmem0_wstrb">
           <CONNECTIONS>
             <CONNECTION INSTANCE="idma0" PORT="m_axi_gmem0_wstrb"/>
           </CONNECTIONS>
@@ -2073,7 +2073,7 @@
             <CONNECTION INSTANCE="idma0" PORT="m_axi_gmem0_arready"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="S00_AXI_rdata" RIGHT="0" SIGIS="undef" SIGNAME="idma0_m_axi_gmem0_rdata">
+        <PORT DIR="O" LEFT="63" NAME="S00_AXI_rdata" RIGHT="0" SIGIS="undef" SIGNAME="idma0_m_axi_gmem0_rdata">
           <CONNECTIONS>
             <CONNECTION INSTANCE="idma0" PORT="m_axi_gmem0_rdata"/>
           </CONNECTIONS>
@@ -2148,12 +2148,12 @@
             <CONNECTION INSTANCE="odma0" PORT="m_axi_gmem0_awready"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="S01_AXI_wdata" RIGHT="0" SIGIS="undef" SIGNAME="odma0_m_axi_gmem0_wdata">
+        <PORT DIR="I" LEFT="63" NAME="S01_AXI_wdata" RIGHT="0" SIGIS="undef" SIGNAME="odma0_m_axi_gmem0_wdata">
           <CONNECTIONS>
             <CONNECTION INSTANCE="odma0" PORT="m_axi_gmem0_wdata"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="3" NAME="S01_AXI_wstrb" RIGHT="0" SIGIS="undef" SIGNAME="odma0_m_axi_gmem0_wstrb">
+        <PORT DIR="I" LEFT="7" NAME="S01_AXI_wstrb" RIGHT="0" SIGIS="undef" SIGNAME="odma0_m_axi_gmem0_wstrb">
           <CONNECTIONS>
             <CONNECTION INSTANCE="odma0" PORT="m_axi_gmem0_wstrb"/>
           </CONNECTIONS>
@@ -2238,7 +2238,7 @@
             <CONNECTION INSTANCE="odma0" PORT="m_axi_gmem0_arready"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="S01_AXI_rdata" RIGHT="0" SIGIS="undef" SIGNAME="odma0_m_axi_gmem0_rdata">
+        <PORT DIR="O" LEFT="63" NAME="S01_AXI_rdata" RIGHT="0" SIGIS="undef" SIGNAME="odma0_m_axi_gmem0_rdata">
           <CONNECTIONS>
             <CONNECTION INSTANCE="odma0" PORT="m_axi_gmem0_rdata"/>
           </CONNECTIONS>
@@ -2430,8 +2430,8 @@
         </PORT>
       </PORTS>
       <BUSINTERFACES>
-        <BUSINTERFACE BUSNAME="idma0_m_axi_gmem0" DATAWIDTH="32" NAME="S00_AXI" TYPE="SLAVE" VLNV="xilinx.com:interface:aximm:1.0">
-          <PARAMETER NAME="DATA_WIDTH" VALUE="32"/>
+        <BUSINTERFACE BUSNAME="idma0_m_axi_gmem0" DATAWIDTH="64" NAME="S00_AXI" TYPE="SLAVE" VLNV="xilinx.com:interface:aximm:1.0">
+          <PARAMETER NAME="DATA_WIDTH" VALUE="64"/>
           <PARAMETER NAME="PROTOCOL" VALUE="AXI4"/>
           <PARAMETER NAME="FREQ_HZ" VALUE="100000000"/>
           <PARAMETER NAME="ID_WIDTH" VALUE="0"/>
@@ -2498,8 +2498,8 @@
             <PORTMAP LOGICAL="RREADY" PHYSICAL="S00_AXI_rready"/>
           </PORTMAPS>
         </BUSINTERFACE>
-        <BUSINTERFACE BUSNAME="odma0_m_axi_gmem0" DATAWIDTH="32" NAME="S01_AXI" TYPE="SLAVE" VLNV="xilinx.com:interface:aximm:1.0">
-          <PARAMETER NAME="DATA_WIDTH" VALUE="32"/>
+        <BUSINTERFACE BUSNAME="odma0_m_axi_gmem0" DATAWIDTH="64" NAME="S01_AXI" TYPE="SLAVE" VLNV="xilinx.com:interface:aximm:1.0">
+          <PARAMETER NAME="DATA_WIDTH" VALUE="64"/>
           <PARAMETER NAME="PROTOCOL" VALUE="AXI4"/>
           <PARAMETER NAME="FREQ_HZ" VALUE="100000000"/>
           <PARAMETER NAME="ID_WIDTH" VALUE="0"/>
@@ -2590,7 +2590,7 @@
           <PARAMETER NAME="SUPPORTS_NARROW_BURST" VALUE="0"/>
           <PARAMETER NAME="NUM_READ_OUTSTANDING" VALUE="16"/>
           <PARAMETER NAME="NUM_WRITE_OUTSTANDING" VALUE="16"/>
-          <PARAMETER NAME="MAX_BURST_LENGTH" VALUE="64"/>
+          <PARAMETER NAME="MAX_BURST_LENGTH" VALUE="128"/>
           <PARAMETER NAME="PHASE" VALUE="0.000"/>
           <PARAMETER NAME="CLK_DOMAIN" VALUE="top_zynq_ps_0_pl_clk0"/>
           <PARAMETER NAME="NUM_READ_THREADS" VALUE="1"/>
@@ -4862,7 +4862,7 @@
           <PARAMETER NAME="HAS_BRESP" VALUE="1"/>
           <PARAMETER NAME="HAS_RRESP" VALUE="1"/>
           <PARAMETER NAME="SUPPORTS_NARROW_BURST" VALUE="0"/>
-          <PARAMETER NAME="MAX_BURST_LENGTH" VALUE="64"/>
+          <PARAMETER NAME="MAX_BURST_LENGTH" VALUE="128"/>
           <PARAMETER NAME="PHASE" VALUE="0.000"/>
           <PARAMETER NAME="CLK_DOMAIN" VALUE="top_zynq_ps_0_pl_clk0"/>
           <PARAMETER NAME="NUM_READ_THREADS" VALUE="1"/>
