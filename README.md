@@ -62,8 +62,28 @@ There are 4 parts for Comms External:
     --> integrated into src/sw_machine_learning/src/db_connect.py  
 
 ## SW Machine Learning
+1. Models
+   a. Generated Quantised Models
+      src/sw_machine_learning/quantised_models
+   b. Generated Models
+      src/sw_machine_learning/models
+   c. Quantised Models Source
+      src/sw_machine_learning/src/quantised_models
+   d. Models Source
+      src/sw_machine_learning/src/models
+   e. src/sw_machine_learning/main.py
+      Driver script to train and store different models. Model to train, where to load data from and where to save model can all be configured here, along with number of Epochs,       Learning Rate, etc.
 
-*edit*
+2. Live Run Source
+   a. src/sw_machine_learning/multiuser_run.py
+      Instantiates additional process to run the three user threads, as well as starts the 3 server connections to the 3 Beetle clients.
+      Instantiates connection to the database as well as evaluation server. 
+      Is able to run with different flags, allowing us to test with 1-3 users, with or without evaluation server, with or without FPGA model.
+   b. src/sw_machine_learning/src/multiuser.py
+      Contains the MultiUser class that loads and stores the models used for prediction as well as the lock for thread sharing.
+      MultiUser.process_data() is the function that is continuously running on each thread to process the raw data from the server.
+   c. src/sw_machine_learning/src/db_connect.py
+      Contains connection to database, evaluation server. Recieves data from multiuser process through a queue. For each type of packet recieved, the model takes in packets           recieved within a certain time frame and aggregates all the predictions to give a more accurate prediction.
 
 ## SW Dashboard
 
