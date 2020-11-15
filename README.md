@@ -79,6 +79,7 @@ There are 4 parts for Comms External:
       
    e. src/sw_machine_learning/main.py
       * Driver script to train and store different models. Model to train, where to load data from and where to save model can all be configured here, along with number of Epochs, Learning Rate, etc.
+      * src/sw_machine_learning/src contains the source code for functions called by main.py, such as dataset_utils which prepares training, validation and test data, train.p and test.py which do the training and generating statistics for the model respectively.
 
 2. Live Run Source
 
