@@ -64,6 +64,7 @@ There are 4 parts for Comms External:
 ## SW Machine Learning
 
 1. Models
+
    a. Generated Quantised Models
       src/sw_machine_learning/quantised_models
       
@@ -80,6 +81,7 @@ There are 4 parts for Comms External:
       * Driver script to train and store different models. Model to train, where to load data from and where to save model can all be configured here, along with number of Epochs, Learning Rate, etc.
 
 2. Live Run Source
+
    a. src/sw_machine_learning/multiuser_run.py
       * Instantiates additional process to run the three user threads, as well as starts the 3 server connections to the 3 Beetle clients.
       * Instantiates connection to the database as well as evaluation server. 
