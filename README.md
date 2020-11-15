@@ -12,7 +12,11 @@ This is the github repository for our CG4002 Capstone Project. The sections belo
 
 ## Comms Internal
 
-*edit*
+1. src/arduino/arduino.ino: Contains the final version of code running on arduino side. 
+                            It is based on hardware_sensor_final.ino and integrates Comms Internal part. Handshake and data format process are done here.
+
+2. src/comm_internal/comm_internal.py: Set up BLE connection + handshake with beetle + receive and process sensor data received.  
+   --> integrate into src/main_laptop.py: Contains the final version of code running on laptop side.
 
 ## Comms External
 
