@@ -16,7 +16,26 @@ This is the github repository for our CG4002 Capstone Project. The sections belo
 
 ## Comms External
 
-*edit*
+There are 4 parts for Comms External:
+
+1. Socket connection between laptop and ultra 96:
+    a. src/comm_external/socket_client.py (socket client with AES encryption + calculating RTT & offset for socket connection)
+    --> integrated into src/main_laptop.py
+    b. src/comm_external/socket_server.py (socket server with AES encryption + calculating RTT & offset for socket connection)
+    --> integrated into src/sw_machine_learning/multiuser_run.py
+
+2. Socket connection between ultra 96 and evaluation server:
+    a. src/comm_external/eval_client.py (socket client to send processed message to the evaluation server)
+    --> integrated into src/sw_machine_learning/src/db_connect.py
+    b. src/comm_external/eval_server.py (provided by prof)
+
+3. Sync delay:
+    a. src/comm_external/multiple_server.py (run three socket server together & calculating the sync delay for dancers based on raw data)
+    --> integrated into src/sw_machine_learning/multiuser_run.py
+
+4. Connection between ultra 96 and database:
+    a. src/comm_external/DB_Client.py (send processed message to the dashboard database)
+    --> integrated into src/sw_machine_learning/src/db_connect.py
 
 ## SW Machine Learning
 
