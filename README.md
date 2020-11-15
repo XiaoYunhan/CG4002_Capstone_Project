@@ -62,6 +62,7 @@ There are 4 parts for Comms External:
     --> integrated into src/sw_machine_learning/src/db_connect.py  
 
 ## SW Machine Learning
+
 1. Models
    a. Generated Quantised Models
       src/sw_machine_learning/quantised_models
