@@ -270,7 +270,6 @@ void initHandshake() {
       receiveByte = Serial.read();
       receiveByte = (char)receiveByte;
       if (receiveByte == 'H') {
-        //Serial.println("Received 'H' from laptop.");
         Serial.write("ACK"); // Send 'ACK' to Laptop
         delay(500);
         handshakeDone = 1;
@@ -299,12 +298,11 @@ void processDanceData() {
   }
   
   char checksumByte[2] = "";
-  //checksumByte[0] = getChecksum(dataPacket);
+  checksumByte[0] = getChecksum(dataPacket);
   strcat(dataPacket,checksumByte);
-  //strcat(dataPacket, "e");
+  strcat(dataPacket, "e");
   
   Serial.write(dataPacket);
-  //Serial.println("");
 }
 
 void processPositionData() {
@@ -326,7 +324,7 @@ void processPositionData() {
   }
   
   char checksumByte[2] = "";
-  //checksumByte[0] = getChecksum(dataPacket);
+  checksumByte[0] = getChecksum(dataPacket);
   strcat(dataPacket,checksumByte);
   strcat(dataPacket, "e");
   
@@ -335,7 +333,11 @@ void processPositionData() {
 }
 
 char getChecksum(char dataPacket) {
-  int len = strlen(dataPacket);
+  int lenth = strlen(dataPacket);
   char checksum = 0;
+  for(int i = 0;i < lenth; i++) {
+    checksum += dataPacket[i];
+  }
+  checksum = ((int)checksum) % 100;
   return checksum;
 }
