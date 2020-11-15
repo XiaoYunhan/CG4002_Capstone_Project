@@ -22,6 +22,7 @@ There are 2 components for the hardware FPGA:
     a. src/hardware_fpga/mlp_v*
       * integrated into src/sw_machine_learning
       * mlp_v5_deployment_final is the final version
+      
     b. contains:
       * driver.py: the driver file
       * fpga.py: file used to execute driver.py
