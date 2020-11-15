@@ -19,7 +19,7 @@ There are 2 components for the hardware FPGA:
 
 2. Deployment to FPGA board:
 
-    a. src/hardware_fpga/mlp_v*
+    a. src/hardware_fpga/mlp_v*_deployment
       * integrated into src/sw_machine_learning
       * mlp_v5_deployment_final is the final version
       
