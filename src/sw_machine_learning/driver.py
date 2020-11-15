@@ -153,6 +153,7 @@ if __name__ == "__main__":
             pass
         # load desired input .npy file
         ibuf_normal = np.load(inputfile)
+        #ibuf_normal = np.random.uniform(0, 1, (1, 72))
         ibuf_folded = finnDriver.fold_input(ibuf_normal)
         ibuf_packed = finnDriver.pack_input(ibuf_folded)
         finnDriver.copy_input_data_to_device(ibuf_packed)
@@ -198,5 +199,3 @@ if __name__ == "__main__":
         obuf_folded = finnDriver.unpack_output(obuf_packed)
         obuf_normal = finnDriver.unfold_output(obuf_folded)
         np.save(outputfile, obuf_normal)
-
-

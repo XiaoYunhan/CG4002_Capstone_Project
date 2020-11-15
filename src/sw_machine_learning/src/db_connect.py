@@ -4,7 +4,9 @@ import logging
 import statistics 
 import random
 import time
-from datetime import datetime
+import math 
+from collections import Counter
+import datetime
 import numpy as np
 from time import sleep
 from comm_external.multiple_server import ACTIONS
@@ -22,6 +24,7 @@ class ProcessPrediction():
         self.pos = "1 2 3"
         self.q_users = q_users
         self.is_eval = args.eval
+        self.num_users = args.num_users
         RDS_HOSTNAME = "localhost"
         RDS_USERNAME = "b07admin"
         RDS_PASSWORD = "password"
@@ -47,7 +50,8 @@ class ProcessPrediction():
         #self.timer = Timer(8, self.set_flag)
         self.run_flag = False
         self.start = False
-        self.sync = sync
+        if self.num_users == 3:
+            self.sync = sync
         self.positions = [1,2,3]
 
 
@@ -55,8 +59,9 @@ class ProcessPrediction():
         new_positions = self.positions
         matrix = [[0,0,0],[0,0,0],[0,0,0]]
         change = [0,0,0]
+        
         for pos in pred:
-            if pos[1] == 0:
+            if pos[1] == 1:
                 change[pos[2]-1] = change[pos[2]-1] - 1
             else:
                 change[pos[2]-1] = change[pos[2]-1] + 1
@@ -133,9 +138,19 @@ class ProcessPrediction():
                 if not done[i]:
                     choices = []
                     for j in max_pos[i]:
-                        choices.append(j[1]+1)
+                        if not done[j[1]]:
+                            choices.append(j[1]+1)
                     new_positions[i] = random.choice(choices)
-        self.positions = new_positions       
+                    done[i] = True
+            if not all(done):
+                for i in range(3):
+                    if not done[i]:
+                        new_positions[i] = i+1
+                        break
+        if len(new_positions) == len(set(new_positions)):
+            self.positions = new_positions
+        else:
+            logging.info("Prediction discarded due to non-matching position change")
       
         
     def cmd_to_str(self, tup):
@@ -159,38 +174,59 @@ class ProcessPrediction():
         MOVE_TIME = 6
         pos_out = []
         pos_recv = 1e12
-        POS_TIME = 3
+        POS_TIME = 2
         while True:
             if time.time() - move_recv > MOVE_TIME:
-                if len(move_out) > 3:
+                if len(move_out) >= 2:
                     logging.info("Processing " + str(len(move_out)) + " moves")
                     try:
                         self.execute(statistics.mode(move_out))
                     except:
-                        self.execute(random.choice(move_out))
-                    sleep(1)
+                        res = [] 
+                        move_out_counter = Counter(move_out)  
+                        temp = move_out_counter.most_common(1)[0][1]  
+                        for ele in move_out: 
+                          if move_out.count(ele) == temp: 
+                            res.append(ele) 
+                        res = list(set(res)) 
+                        self.execute(random.choice(res))
+                    #sleep(1)
                 move_recv = 1e12
                 move_out.clear()
+                pos_recv = 1e12
+                pos_out.clear()
                 while not self.q_users.empty():
                     self.q_users.get()
             if time.time() - pos_recv > POS_TIME:
-                logging.info("Processing " + str(len(move_out)) + " moves")
-                self.build_prob(pos_out)
-                self.execute("1 -1")
+                if len(pos_out) > 0: 
+                    logging.info("Processing " + str(len(pos_out)) + " positions")
+                    try:
+                        self.build_prob(pos_out)
+                        self.execute("1 -1")
+                    except:
+                        pos_recv = 1e12
+                        pos_out.clear()
+                        continue
+                move_recv = 1e12
+                move_out.clear()
                 pos_recv = 1e12
+                pos_out.clear()
             try:
                 cmd = self.q_users.get(block=False)
-                logging.info(cmd)
+                #logging.info(cmd)
                 sleep(1e-9)
                 if cmd[0] == 0:
+                    pos_out.clear()
+                    pos_recv = 1e12
                     move_out.append(self.cmd_to_str(cmd))
                     logging.info("Captured " + str(len(move_out)) + " moves")
                     if move_recv == 1e12:
                         move_recv = time.time()
                 elif cmd[0] == 1:
                     move_out.clear()
+                    move_recv = 1e12
                     pos_out.append(cmd)
-                    logging.info("Captured " + str(len(move_out)) + " moves")
+                    logging.info("Captured " + str(len(pos_out)) + " positions")
                     if pos_recv == 1e12:
                         pos_recv = time.time()
                 elif cmd[0] == 2:
@@ -220,22 +256,21 @@ class ProcessPrediction():
         self.run_flag = False
         logging.info("Timer Ended")
     
-    def set_query(self, cmd, date, left_time, center_time, right_time, diff_in_timing, sync):
+    def set_query(self, cmd, date, left_time, center_time, right_time, diff_in_timing):
         POS = ["POS_1", "POS_2", "POS_3"]
         action = None
-        
-        if sync > 1:
+        if float(diff_in_timing) <= 500:
             sync_str = "Yes"
         else:
             sync_str = "No"
             
         if cmd["CMD"] == 0:
-            if cmd["MOVE"] == -1:
+            if cmd["MOVE"] == "-1":
                 return None, None
             action = ACTIONS[int(cmd["MOVE"])]
         elif cmd["CMD"] == 1:
             # if len([cmd[POS[0]],cmd[POS[1]],cmd[POS[2]]]) != len(set([cmd[POS[1]],cmd[POS[2]],cmd[POS[3]]])):
-                # logging.info("Prediction discarded due to non-matching position change")
+                # logging.info("Prediction discarded due to non-matching positi1on change")
                 # return None, None
             action = "None"
         elif cmd["CMD"] == 2:
@@ -244,42 +279,47 @@ class ProcessPrediction():
             action = "End"
             
         query = "INSERT INTO dancedata VALUES (" + "'" + date + "'," +"'"+ action +"'"+ \
-             "," +"'"+left_time +"'"+ "," + cmd[POS[0]] + "," +"'"+ center_time +"'"+ "," + cmd[POS[1]] + \
-             "," +"'"+ right_time +"'"+ "," + cmd[POS[2]] + "," + diff_in_timing + "," + "'" + sync_str + "')"
-        eval_msg = cmd[POS[0]] + " " + cmd[POS[1]] + " " + cmd[POS[2]] + "|" + action + "|" + str(sync)
+             "," +"'"+left_time +"'"+ ",'" + cmd[POS[0]] + "'," +"'"+ center_time +"'"+ ",'" + cmd[POS[1]] + \
+             "'," +"'"+ right_time +"'"+ ",'" + cmd[POS[2]] + "'," + diff_in_timing + "," + "'" + sync_str + "')"
+        if action == "End":
+            action = "logout"
+        eval_msg = cmd[POS[0]] + " " + cmd[POS[1]] + " " + cmd[POS[2]] + "|" + action + "|" + diff_in_timing
         
         return query, eval_msg
     
     def execute(self, cmd):
-        date = datetime.today().strftime('%Y-%m-%d')
+        date = datetime.datetime.today().strftime('%Y-%m-%d')
         dance_move = "0"
-        # sync = "Yes"
+        sync = "Yes"
         left_time = "21:03:30.204"
         center_time = "21:03:45.304"
         right_time = "21:03:45.304"
-        sync = self.sync[0]
-        #left_time = time.strftime("%H:%M:%S", self.sync[1])
-        #center_time = time.strftime("%H:%M:%S", self.sync[2])
-        #right_time = time.strftime("%H:%M:%S", self.sync[3])
-        diff_in_timing = str(np.diff(np.asarray(self.sync[1:]), n=2)[0])
+        diff_in_timing = "1.0"
+        if self.num_users == 3:
+            diff_in_timing = str(self.sync[0])
+            left_time = (datetime.datetime.now() - datetime.timedelta(seconds=self.sync[1])).strftime("%H:%M:%S.%f")[:-3]
+            center_time = (datetime.datetime.now() - datetime.timedelta(seconds=self.sync[2])).strftime("%H:%M:%S.%f")[:-3]
+            right_time = (datetime.datetime.now() - datetime.timedelta(seconds=self.sync[3])).strftime("%H:%M:%S.%f")[:-3]
+            #diff_in_timing = str(np.diff(np.asarray(self.sync[1:]), n=2)[0])
         insertDanceDataQuery = None
         eval_msg = None
         
         cmd = self.cmd_to_dict(cmd)
         
-        query, eval_msg = self.set_query(cmd, date, left_time, center_time, right_time, diff_in_timing, sync)
+        query, eval_msg = self.set_query(cmd, date, left_time, center_time, right_time, diff_in_timing)
         
         if query is None or not query:
             return
                 
-        if self.is_eval and cmd["CMD"] == 0:
+        if self.is_eval and cmd["CMD"] == 0 or cmd["CMD"] == 3 and "None" not in eval_msg:
             self.eval_client.execute(eval_msg)
             self.positions = self.eval_client.receive_dancer_position().split(" ")
             logging.info("Positions reset to " + " ".join(self.positions))
             sleep(1e-12)
         logging.info(query)
         #logging.info(cmd)
-        self.cursor.execute(query)
+        if not cmd["CMD"] == 1 and "None" not in query:
+            self.cursor.execute(query)
         
 
     

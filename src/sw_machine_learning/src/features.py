@@ -34,3 +34,25 @@ def convert_raw(input):
         frame.append(sigma)
 
     return frame
+    
+def convert_raw_pos(input):
+    frame = []
+    for i in range(6):
+        frame.append(np.mean(input[i]))
+    for i in range(6):
+        frame.append(np.std(input[i]))
+    for i in range(6):
+        frame.append(np.min(input[i]))
+    for i in range(6):
+        frame.append(np.max(input[i]))
+    for i in range(4):
+        frame.append(get_angle(input[0][i:i+2], input[1][i:i+2], input[2][i:i+2]))
+    for i in range(4):
+        frame.append(get_angle(input[3][i:i+2], input[4][i:i+2], input[5][i:i+2]))
+    for i in range(6):
+        ARcoeff, sigma = sm.regression.yule_walker(input[i], order=4, method="mle")
+        for j in ARcoeff:
+            frame.append(j)
+        frame.append(sigma)
+
+    return frame

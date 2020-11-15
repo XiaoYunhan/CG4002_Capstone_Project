@@ -3,8 +3,9 @@ from threading import Thread
 import argparse
 import time
 import numpy as np
+import datetime
+import multiprocessing as mp
 from multiprocessing import Process, Queue, Array
-import ctypes as c
 
 from src.db_connect import ProcessPrediction
 from src.multiuser import MultiUser
@@ -26,37 +27,42 @@ def sync_delay(server, sync):
     first_index = 1
     third_index = 1
     while True:
-        if sync_stop == False and server[0].raw_data == STOP_PATTERN and server[1].raw_data == STOP_PATTERN and server[2].raw_data == STOP_PATTERN:
+        # print("server1: " + server[0].raw_data)
+        # print("server2: " + server[1].raw_data)
+        # print("server3: " + server[2].raw_data)
+        if sync_stop == False and STOP_PATTERN in server[0].raw_data and STOP_PATTERN in server[1].raw_data and STOP_PATTERN in server[2].raw_data:
             sync_stop = True
-            print("!")
+            # for i in range(10):
+                # print("!")
         # if server[0].raw_data != STOP_PATTERN and server[1].raw_data != STOP_PATTERN and server[2].raw_data != STOP_PATTERN:
         #     sync_stop = False
-        check = [server[0].raw_data == STOP_PATTERN, server[1].raw_data == STOP_PATTERN, server[2].raw_data == STOP_PATTERN]
+        check = [STOP_PATTERN in server[0].raw_data, STOP_PATTERN in server[1].raw_data, STOP_PATTERN in server[2].raw_data]
         if sync_stop == True and check.count(False) == 1:
             first_index = check.index(False)
             if first_index == 0:
-                first_timestamp = time.time() - server[0].offset/1000
+                first_timestamp = time.time() - server[0].offset/1000.0
             elif first_index == 1:
-                first_timestamp = time.time() - server[1].offset/1000
+                first_timestamp = time.time() - server[1].offset/1000.0
             else:
-                first_timestamp = time.time() - server[2].offset/1000
+                first_timestamp = time.time() - server[2].offset/1000.0
         if sync_stop == True and check.count(False) == 2:
             third_index = check.index(True)
         if sync_stop == True and check.count(False) == 3:
             if third_index == 0:
-                third_timestamp = time.time() - server[0].offset/1000
+                third_timestamp = time.time() - server[0].offset/1000.0
             elif third_index == 1:
-                third_timestamp = time.time() - server[1].offset/1000
+                third_timestamp = time.time() - server[1].offset/1000.0
             else:
-                third_timestamp = time.time() - server[2].offset/1000
+                third_timestamp = time.time() - server[2].offset/1000.0
             sync_stop = False
-            sync_delay = third_timestamp - first_timestamp
+            sync_delay = abs(third_timestamp - first_timestamp)
         
-        sync[0] = sync_delay
-        sync[1] = time.time() #- server[0].offset/1000
-        sync[2] = time.time() #- server[1].offset/1000
-        sync[3] = time.time() #- server[2].offset/1000
-        time.sleep(0.2)
+        sync[0] = sync_delay * 1000
+        #sync[0] = random.randrange(0,100)/100.0
+        sync[1] = server[0].offset/1000.0
+        sync[2] = server[1].offset/1000.0
+        sync[3] = server[2].offset/1000.0
+        time.sleep(0.01)
 
 
 def multi_user(q_users, sync, args):
@@ -90,7 +96,7 @@ if __name__ == "__main__":
     parser.add_argument('--fpga', '-f', action='store_true', default=False,
                     dest='use_fpga',
                     help='Use FPGA for prediction')
-    parser.add_argument('--feat', action='store_true', default=False,
+    parser.add_argument('--feat', action='store_true', default=True,
                     dest='use_feat',
                     help='Use FPGA for prediction')
     parser.add_argument('-u', type=int, default=3, action='store', dest='num_users',
@@ -102,19 +108,22 @@ if __name__ == "__main__":
 
     q_users = Queue()
     procs = []
-    sync = Array(c.c_double, 4)
+    #sync = Array(c.c_double, 4)
+    sync = Array('d', 4)
     #eval_client = Client("127.0.0.1", 8075, 7, "passwordpassword")
     
     #db_thread = Thread(name="DB-Thread", target=db_connect, args=(queue,eval_client) )
     #db_thread.setDaemon(True)
     #workers.append(db_thread)
     
-    procs.append(Process(target=multi_user, args=(q_users, sync, args,)))
+    print("[Power Saving] Running on", mp.cpu_count, "cores.")
+    #procs.append(Process(target=multi_user, args=(q_users, sync, args,)))
     procs.append(Process(target=process_prediction, args=(q_users, sync, args,)))
     
-    for i in range(2):
+    for i in range(len(procs)):
         procs[i].start()
-    for i in range(2):
+    multi_user(q_users, sync, args)
+    for i in range(len(procs)):
         procs[i].join()
     
     #queue.join()

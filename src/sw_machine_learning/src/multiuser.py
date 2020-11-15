@@ -7,13 +7,13 @@ import logging
 
     
 
-from sklearn.preprocessing import MinMaxScaler
+#from sklearn.preprocessing import MinMaxScaler
 
 #from src.models.mlp import *
 from sklearn.ensemble import RandomForestRegressor
 from comm_external.multiple_server import *
 from fpga import FinnDriver
-from src.features import convert_raw
+from src.features import convert_raw, convert_raw_pos
 
 
 
@@ -30,17 +30,17 @@ class MultiUser():
         self.is_eval = args.eval
         if self.use_fpga:
             #pass
+            self.scaler = load('models/feat_all_scaler.joblib')
             self.driver = FinnDriver()
         elif self.use_feat:
-            self.scaler = load('models/feat_scaler.joblib')
-            self.model = load('models/rbf_feat.joblib')
+            self.scaler = load('models/feat_all_scaler.joblib')
+            self.model = load('models/skl_mlp_feat.joblib')
         else:
             self.model = load('models/rbf0511.joblib')
-        self.rf = load('models/rf.joblib')
+        self.rf = load('models/rbf_pos_feat.joblib')
+        self.pos_scaler = load('models/pos_feat_scaler.joblib')
         self.lock = Lock()
         self.q_users = q_users
-        if self.is_eval:
-            self.q_eval = q_eval
         #self.q_pkt = [-1,(-1,1),(-1,2),(-1,3)]
 
     def init_server(self, IP_ADDR, PRT, GRP, ID):
@@ -70,17 +70,18 @@ class MultiUser():
         IDLE_FRAME = "-1/-1/-1/-1/-1/-1"
         IGNORE_FRAME = 10
         START_TIME = 3
-        END_TIME = 8 
-        prev_msg = ""
+        END_TIME = 10 
+        prev_move = ""
+        prev_pos = ""
         idle_count = 0
         MOVE_TIMEOUT = 0.2
         POS_TIMEOUT = 2
         move_frame_feat = [[],[],[],[],[],[]]
         move_frame = []
         FRAME_SIZE = 60
-        if self.use_feat:
+        if self.use_feat or self.use_fpga:
             FRAME_SIZE = 72
-        pos_frame = []
+        pos_frame = [[],[],[],[],[],[]]
         start = False
         start_count = time.time() 
         end_count = 0
@@ -114,18 +115,20 @@ class MultiUser():
             move_data = '/'.join(server.raw_data.split("/")[1:7])
             pos_data = '/'.join(server.raw_data.split("/")[7:13]).rstrip()
             #logging.info("MV: " + move_data + " POS: " + pos_data)
-            if prev_msg != move_data and len(move_data) > 0 and len(pos_data) > 0:
+            if prev_move != move_data and len(move_data) > 0 and len(pos_data) > 0:
+                #logging.info(server.raw_data)
                 if move_data == IDLE_FRAME:
                     idle_count = idle_count + 1
                     if idle_count >= IGNORE_FRAME:
                         idle_count = 0
                         move_frame.clear()
+                        move_frame_feat = [[],[],[],[],[],[]]
                 if move_data != IDLE_FRAME and pos_data == IDLE_FRAME:
                     #logging.info("Wrist is moving, not Feet")
+                    prev_move = move_data
+                    idle_count = 0
                     if start:
-                        prev_msg = move_data
-                        idle_count = 0
-                        if self.use_feat:
+                        if self.use_feat or self.use_fpga:
                             tmp = move_data.split("/")
                             #logging.info(tmp)
                             for i in range(6):
@@ -142,13 +145,18 @@ class MultiUser():
                             #out = eval_model(self.model, df)[0]
                                 if self.use_fpga:
                                     #pass
-                                    move_frame_np = np.array(move_frame, dtype="float64")
-                                    out = self.driver.predict([move_frame_np])
+                                    move_frame_np = np.array(move_frame_feat, dtype="float64")
+                                    converted = convert_raw(move_frame_np)
+                                    #converted_trf = self.scaler.transform([converted])
+                                    out = self.driver.predict([converted])
                                 elif self.use_feat: 
                                     move_frame_np = np.array(move_frame_feat, dtype="float64")
                                     converted = convert_raw(move_frame_np)
-                                    coverted = self.scaler.transform([converted])
-                                    out = self.model.predict([converted])[0]
+                                    converted_trf = self.scaler.transform([converted])
+                                    #out = self.model.predict(converted_trf)[0]
+                                    out_prob = self.model.predict_log_proba(converted_trf)
+                                    adj_matrix = [0.10,1.25,2,1.1,1.8,1.3,0.8,1.1]
+                                    out = np.argmax(np.asarray([a*b for a,b in zip(out_prob, adj_matrix)]))
                                 else:
                                     out = self.model.predict([move_frame])[0]
                                 msg = str(server.id) + "-: Predicted Dance Move: " + ACTIONS[out]
@@ -159,43 +167,60 @@ class MultiUser():
                                 self.q_users.put(q_pkt)
                                 sleep(1e-9)
                                 q_pkt[MOVE] = -1
+                            except Exception as e:
+                                print(e)
                             finally:
                                 self.lock.release()
                             #del move_frame[0:18]
                             move_frame.clear()
+                            move_frame_feat = [[],[],[],[],[],[]]
                             sleep(MOVE_TIMEOUT)
                         end_count = time.time()
+                        continue
                     else:
                         start_count = time.time()
                         continue
                 if pos_data == IDLE_FRAME:
                     pos_frame.clear()
-                if move_data != IDLE_FRAME and pos_data != IDLE_FRAME:
+                    pos_frame = [[],[],[],[],[],[]]
+                if prev_pos != pos_data and pos_data != IDLE_FRAME:
                     idle_count = 0
+                    prev_pos = pos_data
                     if start:
-                        pos_frame = pos_frame + pos_data.split("/")
+                        pos_tmp = pos_data.split("/")
+                        assert len(pos_tmp) == 6
+                        for i in range(6):
+                            #logging.info(pos_frame)
+                            pos_frame[i].append(pos_tmp[i]) 
+                        #pos_frame = pos_frame + pos_data.split("/")
                         #logging.info("Pos_frame is ")
                         #logging.info(pos_frame)
-                        if len(pos_frame) == 30:
+                        if sum(len(row) for row in pos_frame) == 30:
                             #logging.info("Position change detected")
                             self.lock.acquire()
                             try:
-                                pos_out = np.round(np.clip(self.rf.predict([pos_frame]), 0, 1)).astype(bool)[0]
-                                if pos_out:
+                                pos_frame_np = np.array(pos_frame, dtype="float64")
+                                pos_converted = convert_raw_pos(pos_frame_np)
+                                pos_converted = self.pos_scaler.transform([pos_converted])
+                                pos_out = self.rf.predict(pos_converted)[0]
+                                #pos_out = np.round(np.clip(self.rf.predict([pos_frame]), 0, 1)).astype(bool)[0]
+                                if pos_out == 0:
                                     logging.info(str(server.id) + "-: Movement RIGHT")
-                                    q_pkt[MOVE] = 1
                                     # if server.pos < 3:
                                         # server.pos = server.pos + 1
                                 else:
                                     logging.info(str(server.id) + "-: Movement LEFT")
-                                    q_pkt[MOVE] = 0
                                     # if server.pos > 1:
                                         # server.pos =  server.pos - 1
                                 pos_frame.clear()
+                                pos_frame = [[],[],[],[],[],[]]
+                                q_pkt[MOVE] = pos_out
                                 q_pkt[CMD] = 1
                                 #logging.info(q_pkt)
                                 self.q_users.put(q_pkt)
                                 sleep(1e-9)
+                            except Exception as e:
+                                print(e)
                             finally:
                                 self.lock.release()
                                 sleep(POS_TIMEOUT)

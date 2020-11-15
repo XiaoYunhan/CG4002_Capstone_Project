@@ -12,7 +12,8 @@ from tkinter import Label, Tk
 import pandas as pd
 from Crypto.Cipher import AES
 
-ACTIONS = ['zigzag', 'rocket', 'hair']
+#ACTIONS = ['zigzag', 'rocket', 'hair']
+ACTIONS = ['zigzag', 'rocket', 'hair', 'pushback', 'windowwipe', 'elbowlock', 'scarecrow', 'shouldershrug']
 POSITIONS = ['1 2 3', '3 2 1', '2 3 1', '3 1 2', '1 3 2', '2 1 3']
 LOG_DIR = os.path.join(os.path.dirname(__file__), 'evaluation_logs')
 NUM_MOVE_PER_ACTION = 4
@@ -89,8 +90,8 @@ class Server(threading.Thread):
                     self.has_no_response = False
                     # print(decrypted_message) 
                     self.raw_data = decrypted_message.split("|")[0]
-                    self.RTT = decrypted_message.split("|")[1]
-                    self.offset = decrypted_message.split("|")[2]
+                    self.RTT = float(decrypted_message.split("|")[1])
+                    self.offset = float(decrypted_message.split("|")[2])
                     #print("port: " + str(self.port_num), flush=True)
                     #print("raw data: " + self.raw_data, flush=True)
                     #print("RTT(ms): " + self.RTT)
