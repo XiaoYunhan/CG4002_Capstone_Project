@@ -40,8 +40,8 @@ class Client():
         return encrypted_text
 
     def receive_timestamp(self):
-        dancer_position = self.socket.recv(1024).decode("utf8")
-        return dancer_position
+        timestamp = self.socket.recv(1024).decode("utf8")
+        return timestamp
 
     def execute(self, message):
         message_encrypted = self.encrypt_message(message)

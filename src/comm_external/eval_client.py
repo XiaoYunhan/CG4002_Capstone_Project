@@ -39,9 +39,10 @@ class Client():
         encrypted_text = base64.b64encode(iv + cipher.encrypt(bytes(padded_plain_text, "utf8")))
         return encrypted_text
 
-    def receive_timestamp(self):
-        dancer_position = self.socket.recv(1024).decode("utf8")
-        return dancer_position
+    def receive_dancer_position(self):
+        dancer_position = self.socket.recv(1024)
+        msg = dancer_position.decode("utf8")
+        return msg
 
     def execute(self, message):
         message_encrypted = self.encrypt_message(message)
@@ -52,6 +53,11 @@ class Client():
         self.connection.close()
         self.shutdown.set()
         self.timer.cancel()
+        
+    def receive_dancer_position(self):
+        dancer_position = self.socket.recv(1024)
+        msg = dancer_position.decode("utf8")
+        return msg
 
 
 def main():
@@ -69,37 +75,31 @@ def main():
     
     count = 0
     raw_data = "raw_data"
-    sample_input = ["1 2 3|zigzag|1.0","2 1 3|rocket|2.0"]
 
     time.sleep(15)
 
     while True:
         t1 = time.time()
         # print("t1: " + str(t1))
-        my_client.execute(sample_input[count//10])
-        # my_client.execute("position" + "dance_move" + "sync_delay")
-        # "#position|dance_move|syncdelay"
-        # timestamp = my_client.receive_timestamp()
-        # t4 = time.time()
-        # # print("total: " + str(1000*(t4-t1)))
-        # t2 = float(timestamp.split("|")[0])
-        # t3 = float(timestamp.split("|")[1])
-        # print("t1: " + str(t1))
-        # print("t2: " + str(t2))
-        # print("t3: " + str(t3))
-        # print("t4: " + str(t4))
-        # my_client.RTT = (t4 - t1 - (t3 - t2))
-        # print("RTT(ms): " + str(1000*my_client.RTT))
-        # my_client.offset = (t2 - t1) - my_client.RTT/2
-        # print("offset(ms): " + str(1000*my_client.offset))
-        # if(count == 10000) :
-        #     my_client.stop()
+        my_client.execute(raw_data + "|" + str(1000*my_client.RTT) + "|" + str(1000*my_client.offset))
+        timestamp = my_client.receive_timestamp()
+        t4 = time.time()
+        print("total: " + str(1000*(t4-t1)))
+        t2 = float(timestamp.split("|")[0])
+        t3 = float(timestamp.split("|")[1])
+        print("t1: " + str(t1))
+        print("t2: " + str(t2))
+        print("t3: " + str(t3))
+        print("t4: " + str(t4))
+        my_client.RTT = (t4 - t1 - (t3 - t2))
+        print("RTT(ms): " + str(1000*my_client.RTT))
+        my_client.offset = (t2 - t1) - my_client.RTT/2
+        print("offset(ms): " + str(1000*my_client.offset))
+        if(count == 10000) :
+            my_client.stop()
         time.sleep(2)
         count += 1
-        if(count==20):
-            count = 0
 
 if __name__ == '__main__':
     main()
-
 
