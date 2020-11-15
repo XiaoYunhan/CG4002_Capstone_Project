@@ -30,13 +30,13 @@ The components of the frontend are as follows:
 
 1. In dancedashboard/src/component/Charts:
 
-   a. BarChartSet.vue - 
+   a. BarChartSet.vue - This vue file contains the code to plot the bar graph of Number of Sets Done vs Dancers, which plots the number of dance sets each dancer has partcipated in the current week so far.
    
-   b. BarChartTime.vue - 
+   b. BarChartTime.vue - This vue file contains the code to plot the bar graph of Time Spent (minutes) vs Dancers, which plots how long each dancer has danced in the current week so far.
    
-   c. PieChart.vue - 
+   c. PieChart.vue - This vue file contains the code to plot the Sync Pie Chart in the Real-time Dashboard page. The Sync Pie Chart shows the number of dance moves in the current set the dancers are in sync and not in sync so far. The code in this file accommodates the need to show the data in real-time.
    
-   d. PieChartStatic.vue - 
+   d. PieChartStatic.vue - This vue file contains the code to plot the Sync Pie Chart in the Past Dance Sets page. This code is different from the one above because this does not allow real-time display, which is not needed, since the data required is already available from the backend.
    
 2. In dancedashboard/src/component:
 
