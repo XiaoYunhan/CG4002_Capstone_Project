@@ -12,6 +12,7 @@ if __name__ == "__main__":
   bsize = args.batchsize
   dataset = args.dataset
 
+'''
   if dataset == "mnist":
     from dataset_loading import mnist
     trainx, trainy, testx, testy, valx, valy = mnist.load_mnist_data("/tmp", download=True, one_hot=False)
@@ -20,7 +21,10 @@ if __name__ == "__main__":
     trainx, trainy, testx, testy, valx, valy = cifar.load_cifar_data("/tmp", download=True, one_hot=False)
   else:
     raise Exception("Unrecognized dataset")
-
+'''
+  # change this according to the datasets we wanna test
+  testx = np.load('input.npy')
+  testy = np.load('output.npy')
   test_imgs = testx
   test_labels = testy
 

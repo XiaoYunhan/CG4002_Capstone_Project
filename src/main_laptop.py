@@ -18,7 +18,7 @@ from Crypto.Cipher import AES
 from Crypto import Random
 
 uuid = "0000dfb0-0000-1000-8000-00805f9b34fb"
-beetleAddr = ['2c:ab:33:cc:5f:57'] #'2C:AB:33:CC:65:D4',' F8:30:02:08:E9:59', '2C:AB:33:CC:63:F1', '2C:AB:33:CC:6C:85', '2C:AB:33:CC:6C:94']
+beetleAddr = ['2C:AB:33:CC:5F:57'] #'2C:AB:33:CC:65:D4',' F8:30:02:08:E9:59', '2C:AB:33:CC:63:F1', '2C:AB:33:CC:6C:85', '2C:AB:33:CC:6C:94'
 handshakeDone = [0, 0, 0, 0, 0, 0]
 global string
 receive = ""
@@ -66,7 +66,6 @@ class Client():
 
 
 def set_connection(addr, index):
-    #while True:
     print("Connecting beetle #" + str(index) + " now...")
     try:
         beetle = btle.Peripheral(addr)
@@ -76,9 +75,7 @@ def set_connection(addr, index):
         print("Connection setup with beetle #" + str(index) + " !")
     except:
         print("Failed to connect to beetle #" + str(index) + ".")
-        #re_connect(addr, index)
-
-    #init_handshake(serviceChar)
+        re_connect(addr, index)
     
     while handshakeDone[index] == 0:
         init_handshake(serviceChar)
@@ -90,8 +87,6 @@ def set_connection(addr, index):
 
     while(True):
         if beetle.waitForNotifications(1000):
-            #print(receive)
-            #getStr()
             continue
 
 def re_connect(beetle, index):
@@ -109,11 +104,9 @@ class note_delegate(btle.DefaultDelegate):
     def __init__(self, index):
         btle.DefaultDelegate.__init__(self)
         self.index = index
-        #self.sensorData = list()
         self.message = ""
     
     def handleNotification(self, cHandle, data):
-        #global receive
         receive = data.decode("utf-8")
         if receive == "ACK":
             if handshakeDone[self.index] == 0:
@@ -121,7 +114,6 @@ class note_delegate(btle.DefaultDelegate):
                 print("Beetle #" + str(self.index) + " received ACK!")
                 return
         elif handshakeDone[self.index] == 1:
-            #print(receive)
             self.processData(receive)
         else:
             return
@@ -135,26 +127,23 @@ class note_delegate(btle.DefaultDelegate):
             string = string.replace('/e', '')
             string = string.replace('\n', '')
             self.message = ""
-            #strLen = length(string)
-            #if(self.calChecksum(string, strLen)):
-               #print(string)
-            
-            print(string) 
-            queue.put(string)
+            strLen = length(string)
+            if(self.calChecksum(string, strLen)):
+               print(string)
+               queue.put(string)
 
-    #def calChecksum(self, string, strLen):
-        #pass
-        #index = 0
-        #checkSum = 0
-        #while index < strLen - 2:
-            #checksum += ord(string[index])
-            #index += 1
-        #print(checksum)
-        #if(checksum == ord(string[Len - 2])):
-            #return True
-        #else:
-            #print("Error message detected...")
-            #return False
+    def calChecksum(self, string, strLen):
+        index = 0
+        checkSum = 0
+        while index < strLen - 2:
+            checksum += string[index]
+            index += 1
+        checksum = checksum % 100
+        if(checksum == string[Len - 2]):
+            return True
+        else:
+            print("Error detected in data...", '\n')
+            return False
 
     def getStr():
         return string
@@ -173,7 +162,7 @@ if __name__ == '__main__':
                 index += 1
 
     def thread_external(threadname, queue):
-        my_client = Client("127.0.0.1", 8082, 7, "passwordpassword")
+        my_client = Client("127.0.0.1", 8081, 7, "passwordpassword")
         
         count = 0
         raw_data = "raw_data"

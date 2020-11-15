@@ -4,4 +4,4 @@
 .vscode/
 __pycache__/
 #*.onnx
-*.ipynb
+#*.ipynb
