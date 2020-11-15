@@ -11,12 +11,14 @@ This is the github repository for our CG4002 Capstone Project. The sections belo
 There are 2 components for the hardware FPGA:
 
 1. The FINN notebook for the synthesis and intermediate ONNX models:
+
    a. src/hardware_fpga/mlp_v*
       * mlp_v5 is the final version
       * mlp.ipynb contains the notebook used for synthesis
       * mlp_feat_1111_1002.onnx is the inital onnx model from the SW ML side
 
 2. Deployment to FPGA board:
+
     a. src/hardware_fpga/mlp_v*
       * integrated into src/sw_machine_learning
       * mlp_v5_deployment_final is the final version
