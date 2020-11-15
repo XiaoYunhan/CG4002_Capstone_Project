@@ -27,9 +27,13 @@ This is the github repository for our CG4002 Capstone Project. The sections belo
 There are 2 main components: frontend and backend. The frontend code is found in the "dashboard" folder in the "Software Dashboard" folder. The backend code is found in the "dashboardbackend" folder in the "Software Dashboard" folder.
 
 The components of the frontend are as follows:
+
 1. In dancedashboard/src/component/Charts:
+
    a. BarChartSet.vue - 
+   
    b. BarChartTime.vue - 
+   
    c. PieChart.vue - 
    d. PieChartStatic.vue - 
 2. In dancedashboard/src/component:
