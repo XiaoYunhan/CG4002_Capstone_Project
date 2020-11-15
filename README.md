@@ -35,14 +35,24 @@ The components of the frontend are as follows:
    b. BarChartTime.vue - 
    
    c. PieChart.vue - 
+   
    d. PieChartStatic.vue - 
+   
 2. In dancedashboard/src/component:
-   a. DancerInformation.vue
+
+   a. DancerInformation.vue - 
+   
    b. HowToUse.vue - 
+   
    c. PastDanceSets.vue - 
+   
    d. PersistentSideNavDrawer.vue - 
+   
    e. RealTimeDashboard.vue - 
    
 The components of the backend are as follows:
+
 1. In dancedashboardbackend:
+
    a. server.js - 
+   
